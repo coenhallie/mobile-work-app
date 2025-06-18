@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Testing Validation Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #333; }
+        .status-pass { color: #28a745; font-weight: bold; }
+        .status-fail { color: #dc3545; font-weight: bold; }
+        .test-result { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+        .test-result.passed { border-left-color: #28a745; }
+        .test-result.failed { border-left-color: #dc3545; }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+        .metric-card { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+        .issue { background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .recommendation { background: #d1ecf1; border: 1px solid #bee5eb; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 A/B Testing Validation Report</h1>
+        <p><strong>Generated:</strong> 6/16/2025, 12:44:44 AM</p>
+        
+        <h2>📊 Summary</h2>
+        <div class="metric-grid">
+            <div class="metric-card">
+                <h4>Overall Status</h4>
+                <p class="status-fail">
+                    ❌ FAILED
+                </p>
+            </div>
+            <div class="metric-card">
+                <h4>Tests Run</h4>
+                <p>3 total</p>
+                <p>2 passed, 1 failed</p>
+            </div>
+        </div>
+
+        
+            <div class="test-result passed">
+                <h3>Distribution Validation ✅</h3>
+                
+                
+                
+                
+                
+                
+                    <h4>Details:</h4>
+                    <pre>{
+  "distribution": {
+    "total": 100,
+    "v1": {
+      "count": 34,
+      "percentage": "34.0"
+    },
+    "v2": {
+      "count": 66,
+      "percentage": "66.0"
+    },
+    "sessions": [
+      {
+        "userId": "ab-test-user-0-1750052670728",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-1-1750052670971",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-2-1750052671103",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-3-1750052671237",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-4-1750052671400",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-5-1750052671531",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-6-1750052671655",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-7-1750052671783",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-8-1750052671909",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-9-1750052672040",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-10-1750052672170",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-11-1750052672294",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-12-1750052672426",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-13-1750052672559",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-14-1750052672686",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-15-1750052672812",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-16-1750052672939",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-17-1750052673071",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-18-1750052673199",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-19-1750052673329",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-20-1750052673466",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-21-1750052673591",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-22-1750052673735",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-23-1750052673872",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-24-1750052674005",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-25-1750052674155",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-26-1750052674289",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-27-1750052674414",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-28-1750052674541",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-29-1750052674675",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-30-1750052674802",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-31-1750052674941",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-32-1750052675070",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-33-1750052675202",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-34-1750052675332",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-35-1750052675462",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-36-1750052675632",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-37-1750052675766",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-38-1750052675893",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-39-1750052676019",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-40-1750052676158",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-41-1750052676288",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-42-1750052676421",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-43-1750052676559",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-44-1750052676687",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-45-1750052676864",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-46-1750052676999",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-47-1750052677136",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-48-1750052677262",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-49-1750052677406",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-50-1750052677532",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-51-1750052677673",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-52-1750052677802",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-53-1750052677934",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-54-1750052678064",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-55-1750052678190",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-56-1750052678324",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-57-1750052678449",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-58-1750052678575",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-59-1750052678713",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-60-1750052678852",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-61-1750052678981",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-62-1750052679129",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-63-1750052679257",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-64-1750052679389",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-65-1750052679520",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-66-1750052679649",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-67-1750052679777",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-68-1750052679908",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-69-1750052680039",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-70-1750052680173",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-71-1750052680300",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-72-1750052680426",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-73-1750052680555",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-74-1750052680683",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-75-1750052680815",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-76-1750052680954",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-77-1750052681085",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-78-1750052681212",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-79-1750052681344",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-80-1750052681473",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-81-1750052681606",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-82-1750052681738",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-83-1750052681871",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-84-1750052682000",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-85-1750052682128",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-86-1750052682266",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-87-1750052682392",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-88-1750052682516",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-89-1750052682654",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-90-1750052682781",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-91-1750052682917",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-92-1750052683043",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-93-1750052683174",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-94-1750052683311",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-95-1750052683445",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-96-1750052683575",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-97-1750052683715",
+        "variant": "v1",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-98-1750052683844",
+        "variant": "v2",
+        "method": "fallback"
+      },
+      {
+        "userId": "ab-test-user-99-1750052683974",
+        "variant": "v2",
+        "method": "fallback"
+      }
+    ]
+  }
+}</pre>
+                
+            </div>
+        
+            <div class="test-result failed">
+                <h3>Analytics Validation ❌</h3>
+                
+                
+                    <h4>Issues Found:</h4>
+                    <div class="issue">Cannot query ab_test_assignments table: relation "public.ab_test_assignments" does not exist</div><div class="issue">Cannot query onboarding_analytics table: "failed to parse select parameter (flow_version,event_type,count(*))" (line 1, column 30)</div><div class="issue">Cannot query onboarding_performance table: relation "public.onboarding_performance" does not exist</div>
+                
+                
+                
+                
+                
+                    <h4>Details:</h4>
+                    <pre>{
+  "assignments": {
+    "valid": false,
+    "issues": [
+      "Cannot query ab_test_assignments table: relation \"public.ab_test_assignments\" does not exist"
+    ],
+    "recommendations": [],
+    "stats": {}
+  },
+  "analytics": {
+    "valid": false,
+    "issues": [
+      "Cannot query onboarding_analytics table: \"failed to parse select parameter (flow_version,event_type,count(*))\" (line 1, column 30)"
+    ],
+    "recommendations": [],
+    "stats": {}
+  },
+  "performance": {
+    "valid": false,
+    "issues": [
+      "Cannot query onboarding_performance table: relation \"public.onboarding_performance\" does not exist"
+    ],
+    "recommendations": [],
+    "stats": {}
+  }
+}</pre>
+                
+            </div>
+        
+            <div class="test-result passed">
+                <h3>Flow Differentiation Validation ✅</h3>
+                
+                
+                
+                
+                    <h4>Recommendations:</h4>
+                    <div class="recommendation">Implement UI testing to verify actual flow differences</div><div class="recommendation">Add automated UI tests to verify component behavior by flow version</div>
+                
+                
+                
+                    <h4>Details:</h4>
+                    <pre>{
+  "configuration": {
+    "valid": true,
+    "issues": [],
+    "recommendations": [
+      "Implement UI testing to verify actual flow differences"
+    ]
+  },
+  "components": {
+    "valid": true,
+    "issues": [],
+    "recommendations": [
+      "Add automated UI tests to verify component behavior by flow version"
+    ]
+  }
+}</pre>
+                
+            </div>
+        
+
+        
+            <h2>💡 Overall Recommendations</h2>
+            <div class="recommendation">Implement UI testing to verify actual flow differences</div><div class="recommendation">Add automated UI tests to verify component behavior by flow version</div>
+        
+    </div>
+</body>
+</html>

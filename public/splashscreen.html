@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>HandyApp</title>
+    <style>
+      /* Critical CSS inlined for fastest loading */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .splash-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .logo-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 1rem;
+      }
+
+      .logo {
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        animation: logoFloat 3s ease-in-out infinite;
+      }
+
+      .logo-icon {
+        width: 60px;
+        height: 60px;
+        color: white;
+        stroke-width: 1.5;
+      }
+
+      .app-name {
+        color: #ffffff;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.025em;
+      }
+
+      .app-tagline {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+        font-weight: 400;
+      }
+
+      .loading-indicator {
+        width: 240px;
+        height: 3px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .loading-bar {
+        height: 100%;
+        width: 40%;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+        border-radius: 2px;
+        animation: loading 1.2s ease-in-out infinite;
+      }
+
+      .loading-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        margin-top: 1rem;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes logoFloat {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      @keyframes loading {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(350%);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      /* Mobile optimizations */
+      @media (max-width: 480px) {
+        .splash-content {
+          gap: 1.5rem;
+          padding: 2rem;
+        }
+
+        .logo-container {
+          width: 100px;
+          height: 100px;
+        }
+
+        .app-name {
+          font-size: 1.3rem;
+        }
+
+        .loading-indicator {
+          width: 200px;
+        }
+      }
+
+      /* Preload animation for smoother transitions */
+      .splash-content * {
+        will-change: transform, opacity;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="splash-content">
+      <div class="logo-container">
+        <div class="logo">
+          <!-- Inline SVG for faster loading -->
+          <svg
+            class="logo-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <div class="app-name">HandyApp</div>
+      <div class="app-tagline">Connect. Work. Succeed.</div>
+
+      <div class="loading-indicator">
+        <div class="loading-bar"></div>
+      </div>
+
+      <div class="loading-text">Loading your workspace...</div>
+    </div>
+
+    <script>
+      // Auto-hide splash screen after app loads
+      window.addEventListener('DOMContentLoaded', () => {
+        // Listen for app ready signal
+        const checkAppReady = () => {
+          if (window.__TAURI__ && window.__APP_READY__) {
+            // Fade out splash screen
+            document.body.style.transition = 'opacity 0.3s ease-out';
+            document.body.style.opacity = '0';
+
+            setTimeout(() => {
+              if (window.__TAURI__.window) {
+                window.__TAURI__.window.getCurrent().hide();
+              }
+            }, 300);
+          } else {
+            setTimeout(checkAppReady, 100);
+          }
+        };
+
+        // Start checking after minimum display time
+        setTimeout(checkAppReady, 1000);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- Critical preload script - loads first -->
+    <script src="/preload.js"></script>
+
+    <!-- Optimized viewport and mobile meta tags -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="theme-color" content="#FFFFFF" id="theme-color-meta" />
+    <meta name="msapplication-navbutton-color" content="#1a1a1a" />
+    <meta name="apple-mobile-web-app-title" content="HandyApp" />
+
+    <!-- Preconnect to font providers for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- App icons and manifest -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+
+    <title>HandyApp - Mobile Work Platform</title>
+
+    <!-- Critical CSS to prevent FOUC -->
+    <style>
+      :root {
+        --background: #1a1a1a;
+        --foreground: #ffffff;
+        --primary: oklch(0.55 0.25 265);
+      }
+
+      html,
+      body {
+        background-color: var(--background);
+        color: var(--foreground);
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overscroll-behavior: none;
+      }
+
+      #app {
+        min-height: 100vh;
+        background-color: var(--background);
+      }
+
+      /* Loading state */
+      .app-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--background);
+      }
+
+      .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Hide scrollbars during loading */
+      body:not(.app-ready) {
+        overflow: hidden;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- App container with loading fallback -->
+    <div id="app">
+      <div class="app-loading">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+
+    <!-- Load main app script -->
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- App ready handler -->
+    <script>
+      window.addEventListener('app:ready', () => {
+        document.body.classList.add('app-ready');
+      });
+
+      // Fallback timeout to show app even if ready event doesn't fire
+      setTimeout(() => {
+        document.body.classList.add('app-ready');
+      }, 5000);
+    </script>
+  </body>
+</html>
