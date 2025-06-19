@@ -10,7 +10,9 @@
       </div>
       <div class="text-center p-4 bg-blue-50 rounded-lg">
         <p class="text-3xl font-bold text-blue-600">{{ totalCompletedJobs }}</p>
-        <p class="text-sm text-gray-600">Total Completed Jobs</p>
+        <p class="text-sm text-gray-600">
+          {{ $t('contractorDashboard.totalCompletedJobsLabel') }}
+        </p>
       </div>
       <div class="text-center p-4 bg-yellow-50 rounded-lg">
         <p class="text-3xl font-bold text-yellow-600">

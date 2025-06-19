@@ -440,7 +440,7 @@ const handleAppLoadBiometricFallback = async () => {
       class="w-8 h-8 border-2 border-gray-300 border-t-gray-900 dark:border-gray-600 dark:border-t-white rounded-full animate-spin mb-4"
     ></div>
     <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">
-      Loading...
+      {{ $t('common.loading') }}
     </p>
   </div>
 

@@ -10,34 +10,31 @@
 
     <!-- Job Description -->
     <div class="mb-4">
-      <h3 class="text-lg font-medium text-foreground mb-1">
-        {{ $t('jobs.description') }}
-      </h3>
       <p class="text-muted-foreground whitespace-pre-wrap">
         {{ job.description }}
       </p>
     </div>
 
     <!-- Job Status and Date -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+    <div class="space-y-2 mb-4">
       <div>
-        <h3 class="text-lg font-medium text-foreground mb-1">
-          {{ $t('jobs.status') }}
-        </h3>
+        <span class="font-medium text-foreground"
+          >{{ $t('jobs.status') }}:
+        </span>
         <span
           :class="statusBadgeClass(job.status)"
           class="px-2 py-1 rounded text-sm font-medium"
         >
-          {{ job.status }}
+          {{ $t(getJobStatusTranslationKey(job.status)) }}
         </span>
       </div>
       <div v-if="job.preferred_datetime">
-        <h3 class="text-lg font-medium text-foreground mb-1">
-          {{ $t('jobs.preferredDateTime') }}
-        </h3>
-        <p class="text-muted-foreground">
+        <span class="font-medium text-foreground"
+          >{{ $t('jobs.preferredDateTime') }}:
+        </span>
+        <span class="text-muted-foreground">
           {{ formatDateTime(job.preferred_datetime) }}
-        </p>
+        </span>
       </div>
     </div>
 
@@ -131,6 +128,15 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['apply', 'edit', 'cancel', 'action', 'remove-photo']);
+
+const getJobStatusTranslationKey = (status) => {
+  const statusKey = Object.keys(JOB_STATUS).find(
+    (key) => JOB_STATUS[key] === status
+  );
+  return statusKey
+    ? `jobStatus.${statusKey.toLowerCase()}`
+    : 'jobStatus.unknown';
+};
 
 // Format timestamp to a readable time
 const formatDateTime = (dateTimeString) => {

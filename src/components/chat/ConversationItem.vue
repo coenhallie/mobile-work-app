@@ -63,6 +63,7 @@
 
 <script setup>
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Card,
   CardHeader,
@@ -74,6 +75,8 @@ import {
   formatDisplayName,
   getInitialsFromDisplayName,
 } from '@/lib/nameFormatter';
+
+const { t } = useI18n();
 
 const props = defineProps({
   room: {
@@ -251,7 +254,7 @@ const formattedDate = computed(() => {
   }
   // Yesterday
   else if (date.toDateString() === yesterday.toDateString()) {
-    return 'Yesterday';
+    return t('time.yesterday');
   }
   // This week
   else if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {

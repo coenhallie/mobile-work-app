@@ -63,7 +63,7 @@
     <div v-if="showMetrics && isDev" class="performance-metrics">
       <div class="metrics-grid">
         <div class="metric">
-          <span class="metric-label">Total Items:</span>
+          <span class="metric-label">{{ $t('filters.totalItemsLabel') }}</span>
           <span class="metric-value">{{ totalItems }}</span>
         </div>
         <div class="metric">

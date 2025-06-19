@@ -5,7 +5,9 @@
       <div class="data-grid">
         <div class="data-item">
           <span class="data-value-lg">{{ formattedEarnings }}</span>
-          <span class="data-label-sm">Total Earnings</span>
+          <span class="data-label-sm">{{
+            $t('contractorDashboard.totalEarningsLabel')
+          }}</span>
         </div>
         <div class="data-item">
           <span class="data-value-lg">{{ averageRating }} / 5</span>

@@ -170,7 +170,7 @@
                 : 'Posting Job...'
               : isEditMode
                 ? 'Update Job Request'
-                : 'Post Job Request'
+                : $t('postJobView.titleRequest')
           }}
         </Button>
       </form>

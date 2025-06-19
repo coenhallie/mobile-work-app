@@ -55,7 +55,7 @@
             class="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3"
           >
             <Card
-              class="overflow-hidden group hover:shadow-md transition-all duration-300 border-border/30 hover:border-border"
+              class="overflow-hidden group transition-all duration-300 bg-transparent border border-gray-100 dark:border-gray-800"
             >
               <!-- Image Container -->
               <div class="relative aspect-[4/3] overflow-hidden bg-muted">

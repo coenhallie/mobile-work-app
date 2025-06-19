@@ -21,7 +21,9 @@
 
     <!-- Success Message -->
     <div class="space-y-2">
-      <h2 class="text-2xl font-bold text-gray-900">Application Submitted!</h2>
+      <h2 class="text-2xl font-bold text-gray-900">
+        {{ $t('onboarding.applicationSubmittedTitle') }}
+      </h2>
       <p class="text-gray-600">Your application has been sent successfully</p>
     </div>
 

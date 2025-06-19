@@ -727,6 +727,144 @@ export const useJobApplicationsStore = defineStore('jobApplications', () => {
     }
   }
 
+  // Get all applications for a client's jobs
+  async function getAllApplicationsForClient(clientUserId) {
+    if (!clientUserId) {
+      console.error(
+        '[JobApplicationsStore] getAllApplicationsForClient requires clientUserId'
+      );
+      return [];
+    }
+
+    try {
+      const supabase = getSupabase();
+
+      // First get all jobs for this client
+      const { data: clientJobs, error: jobsError } = await supabase
+        .from('job_postings')
+        .select('id, category_name, description, created_at, status')
+        .eq('posted_by_user_id', clientUserId);
+
+      if (jobsError) {
+        console.error(
+          '[JobApplicationsStore] Error fetching client jobs:',
+          jobsError
+        );
+        return [];
+      }
+
+      if (!clientJobs || clientJobs.length === 0) {
+        return [];
+      }
+
+      const jobIds = clientJobs.map((job) => job.id);
+
+      // Get all applications for these jobs
+      const { data: applications, error: applicationsError } = await supabase
+        .from('job_applications')
+        .select('*')
+        .in('job_id', jobIds)
+        .order('applied_at', { ascending: false });
+
+      if (applicationsError) {
+        console.error(
+          '[JobApplicationsStore] Error fetching applications:',
+          applicationsError
+        );
+        return [];
+      }
+
+      if (!applications || applications.length === 0) {
+        return [];
+      }
+
+      // Get unique contractor user IDs
+      const contractorUserIds = [
+        ...new Set(applications.map((app) => app.contractor_user_id)),
+      ];
+
+      // Fetch contractor profiles separately
+      const { data: contractorProfiles, error: profilesError } = await supabase
+        .from('contractor_profiles')
+        .select(
+          'id, full_name, bio, skills, years_experience, contact_phone, profile_picture_url, work_photo_urls, service_areas'
+        )
+        .in('id', contractorUserIds);
+
+      if (profilesError) {
+        console.error(
+          '[JobApplicationsStore] Error fetching contractor profiles:',
+          profilesError
+        );
+      } else {
+        console.log(
+          '[JobApplicationsStore] Fetched contractor profiles:',
+          contractorProfiles
+        );
+      }
+
+      // Create a map of contractor profiles by id for easy lookup
+      const profilesMap = {};
+      (contractorProfiles || []).forEach((profile) => {
+        profilesMap[profile.id] = profile;
+      });
+
+      // Process applications with job information and contractor profiles
+      const processedApplications = applications.map((app) => {
+        const job = clientJobs.find((j) => j.id === app.job_id);
+        const contractorProfile = profilesMap[app.contractor_user_id];
+
+        // Process avatar URL
+        let processedAvatarUrl = null;
+        if (contractorProfile?.profile_picture_url) {
+          // Assign directly, consistent with useContractorData.js for working contractor cards
+          processedAvatarUrl = contractorProfile.profile_picture_url;
+          // Optional: Add a log to confirm this path is taken
+          console.log(
+            '[JobApplicationsStore] Using profile_picture_url directly for avatar:',
+            processedAvatarUrl
+          );
+        }
+
+        return {
+          id: app.id,
+          jobId: app.job_id,
+          jobTitle:
+            job?.category_name ||
+            job?.description?.substring(0, 50) + '...' ||
+            'Unknown Job',
+          jobStatus: job?.status || 'unknown',
+          jobCreatedAt: job?.created_at,
+          contractorUserId: app.contractor_user_id,
+          message: app.message,
+          status: app.status,
+          appliedAt: app.applied_at || app.created_at,
+          contractor: {
+            id: contractorProfile?.id,
+            userId: app.contractor_user_id,
+            fullName: contractorProfile?.full_name || 'Unnamed Contractor',
+            name: contractorProfile?.full_name || 'Unnamed Contractor', // Add name field for consistency
+            profileImageUrl: processedAvatarUrl, // Use profileImageUrl like ContractorCard
+            rating: null, // contractor_profiles doesn't seem to have rating field
+            skills: contractorProfile?.skills || [],
+            experienceLevel: contractorProfile?.years_experience
+              ? `${contractorProfile.years_experience} years`
+              : null,
+            hourlyRate: null, // contractor_profiles doesn't seem to have hourly_rate field
+          },
+        };
+      });
+
+      return processedApplications;
+    } catch (err) {
+      console.error(
+        '[JobApplicationsStore] Error in getAllApplicationsForClient:',
+        err
+      );
+      return [];
+    }
+  }
+
   return {
     // State
     jobApplications,
@@ -744,5 +882,6 @@ export const useJobApplicationsStore = defineStore('jobApplications', () => {
     bulkUpdateApplicationStatus,
     hasAppliedToJob,
     getApplicationDetails,
+    getAllApplicationsForClient,
   };
 });

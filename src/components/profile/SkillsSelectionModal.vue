@@ -118,8 +118,10 @@
             selected
           </div>
           <div class="flex gap-3">
-            <Button variant="outline" @click="closeModal">Cancel</Button>
-            <Button @click="saveSkills">Save Skills</Button>
+            <Button variant="outline" @click="closeModal">{{
+              $t('common.cancel')
+            }}</Button>
+            <Button @click="saveSkills">{{ $t('common.save') }} Skills</Button>
           </div>
         </div>
       </div>

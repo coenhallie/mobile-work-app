@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full max-w-7xl mx-auto px-4 py-6 bg-white dark:bg-gray-900 min-h-screen pb-32"
+    class="w-full max-w-7xl mx-auto px-4 py-6 bg-gray-900 min-h-screen pb-32"
   >
     <!-- Header -->
     <div class="mb-6">
@@ -28,7 +28,7 @@
     <!-- Profile Display -->
     <div
       v-else-if="contractor"
-      class="bg-card shadow-lg dark:shadow-gray-900/50 rounded-lg p-6"
+      class="bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg p-6"
     >
       <div class="flex items-center mb-6">
         <!-- Profile Photo -->
@@ -37,7 +37,7 @@
         >
           <!-- Show loading indicator while data is loading -->
           <div v-if="!isLoaded" class="text-sm text-muted-foreground">
-            Loading...
+            {{ $t('common.loading') }}
           </div>
           <!-- Show profile image if available -->
           <img
@@ -127,7 +127,7 @@
     <!-- Enhanced Sticky Contact Section -->
     <div
       v-if="contractor"
-      class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border shadow-lg z-[90]"
+      class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-gray-900 backdrop-blur-sm border-t border-border shadow-lg z-[90]"
     >
       <div class="max-w-6xl mx-auto p-4">
         <!-- Contact Success Feedback -->
@@ -208,11 +208,14 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'; // Added computed and watch
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuth } from '@/composables/useAuth';
 import Button from '@/components/ui/button/Button.vue';
 import { useChatStore } from '@/stores/chat';
 import { formatDisplayName } from '@/lib/nameFormatter';
 import WorkShowcase from '@/components/contractor/WorkShowcase.vue';
+
+const { t } = useI18n();
 
 const route = useRoute();
 const router = useRouter();
@@ -414,9 +417,9 @@ const availabilityText = computed(() => {
   const busyUntil = contractor.value.busy_until;
 
   if (status === 'available' && isCurrentlyAvailable) {
-    return 'Available now';
+    return t('availability.availableNow');
   } else if (status === 'available' && !isCurrentlyAvailable) {
-    return 'Outside working hours';
+    return t('availability.outsideWorkingHours');
   } else if (status === 'busy') {
     if (busyUntil) {
       const busyDate = new Date(busyUntil);

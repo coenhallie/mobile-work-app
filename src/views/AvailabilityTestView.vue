@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto p-4 bg-background min-h-screen">
     <h1 class="text-2xl font-bold mb-6 text-foreground">
-      Contractor Availability System Test
+      {{ $t('testing.contractorAvailabilitySystemTest') }}
     </h1>
 
     <!-- Test Results -->
@@ -147,7 +147,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useContractorData } from '@/composables/useContractorData';
+
+const { t } = useI18n();
 
 // State
 const testFilters = ref({
@@ -205,13 +208,13 @@ const getAvailabilityText = (contractor) => {
   const isCurrentlyAvailable = contractor.isCurrentlyAvailable;
 
   if (status === 'available' && isCurrentlyAvailable) {
-    return 'Available now';
+    return t('availability.availableNow');
   } else if (status === 'available' && !isCurrentlyAvailable) {
-    return 'Outside working hours';
+    return t('availability.outsideWorkingHours');
   } else if (status === 'busy') {
-    return 'Currently busy';
+    return t('contractors.busy');
   } else if (status === 'offline') {
-    return 'Offline';
+    return t('contractors.offline');
   } else if (status === 'away') {
     return 'Away';
   } else {

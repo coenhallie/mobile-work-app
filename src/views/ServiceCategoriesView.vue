@@ -6,10 +6,10 @@
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-normal text-gray-900 dark:text-white mb-2">
-        What service do you need?
+        {{ $t('services.whatServiceDoYouNeed') }}
       </h1>
       <p class="text-gray-600 dark:text-gray-400 text-sm">
-        Browse categories and find the perfect service for your needs
+        {{ $t('services.browseCategoriesDescription') }}
       </p>
     </div>
 
@@ -21,8 +21,12 @@
         v-model="searchQuery"
         :placeholder="
           selectedCategoryFilter
-            ? `Search in ${allCategories.find((c) => c.id === selectedCategoryFilter)?.name_es || 'category'}...`
-            : 'Search all services by name or keyword...'
+            ? $t('services.searchInCategoryPlaceholder', {
+                category:
+                  allCategories.find((c) => c.id === selectedCategoryFilter)
+                    ?.name_es || 'category',
+              })
+            : $t('services.searchAllServicesPlaceholder')
         "
         class="flex-grow"
         type="text"
@@ -69,7 +73,7 @@
             class="w-full text-left px-3 py-2 text-sm hover:bg-muted text-foreground"
             :class="{ 'bg-muted font-semibold': !selectedCategoryFilter }"
           >
-            All Categories (Top 20)
+            {{ $t('services.allCategoriesTop20') }}
           </button>
           <div class="my-1 border-t border-border"></div>
           <button
@@ -82,7 +86,6 @@
                 selectedCategoryFilter === cat.id,
             }"
           >
-            <span v-if="cat.icon" class="mr-2 text-lg" v-html="cat.icon"></span>
             {{ cat.name_es }}
           </button>
         </div>
@@ -101,7 +104,11 @@
     </div>
 
     <!-- Main Content Area: Categories or Services Grid -->
-    <div class="flex-grow overflow-y-auto">
+    <div
+      class="flex-grow overflow-y-auto"
+      ref="scrollContainer"
+      @scroll="handleScroll"
+    >
       <!-- Loading Skeleton -->
       <div
         v-if="isLoading"
@@ -216,6 +223,16 @@
             </Button>
           </div>
         </template>
+
+        <!-- Infinite Scroll Loading Indicator -->
+        <div v-if="isLoadingMore" class="flex justify-center items-center py-8">
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          ></div>
+          <span class="ml-2 text-sm text-muted-foreground"
+            >Loading more services...</span
+          >
+        </div>
       </div>
     </div>
   </div>
@@ -250,10 +267,17 @@ const ServiceCard = defineAsyncComponent(
 const router = useRouter();
 const isComponentVisible = ref(true);
 const isLoading = ref(true);
+const isLoadingMore = ref(false);
 const searchQuery = ref('');
 const selectedCategoryFilter = ref(null);
 const isFilterDropdownOpen = ref(false);
 const errorMessage = ref('');
+const scrollContainer = ref(null);
+
+// Pagination state
+const currentPage = ref(0);
+const pageSize = ref(20);
+const hasMoreServices = ref(true);
 
 // Reactive data from Supabase
 const allCategories = ref([]);
@@ -288,8 +312,11 @@ async function fetchCategories() {
 /**
  * Fetch top services by popularity (for default view)
  */
-async function fetchTopServices() {
+async function fetchTopServices(page = 0, append = false) {
   try {
+    const from = page * pageSize.value;
+    const to = from + pageSize.value - 1;
+
     const { data, error } = await supabase
       .from('services')
       .select(
@@ -307,7 +334,7 @@ async function fetchTopServices() {
       .eq('is_active', true)
       .eq('service_categories.is_active', true)
       .order('popularity_score', { ascending: false })
-      .limit(20);
+      .range(from, to);
 
     if (error) {
       throw error;
@@ -327,7 +354,14 @@ async function fetchTopServices() {
       popularity: service.popularity_score,
     }));
 
-    allServices.value = transformedServices;
+    // Check if we have more services to load
+    hasMoreServices.value = transformedServices.length === pageSize.value;
+
+    if (append) {
+      allServices.value = [...allServices.value, ...transformedServices];
+    } else {
+      allServices.value = transformedServices;
+    }
   } catch (error) {
     console.error('Error fetching top services:', error);
     errorMessage.value = 'Failed to load services. Please try again.';
@@ -444,17 +478,56 @@ async function searchAllServices(query) {
 async function initializeData() {
   isLoading.value = true;
   errorMessage.value = '';
+  currentPage.value = 0;
+  hasMoreServices.value = true;
 
   try {
     // Fetch categories first
     await fetchCategories();
 
     // Fetch top services for default view
-    await fetchTopServices();
+    await fetchTopServices(0, false);
   } catch (error) {
     console.error('Error initializing data:', error);
   } finally {
     isLoading.value = false;
+  }
+}
+
+/**
+ * Load more services for infinite scroll
+ */
+async function loadMoreServices() {
+  if (
+    isLoadingMore.value ||
+    !hasMoreServices.value ||
+    selectedCategoryFilter.value ||
+    searchQuery.value.trim()
+  ) {
+    return;
+  }
+
+  isLoadingMore.value = true;
+  try {
+    currentPage.value += 1;
+    await fetchTopServices(currentPage.value, true);
+  } catch (error) {
+    console.error('Error loading more services:', error);
+    currentPage.value -= 1; // Revert page increment on error
+  } finally {
+    isLoadingMore.value = false;
+  }
+}
+
+/**
+ * Handle scroll event for infinite loading
+ */
+function handleScroll(event) {
+  const { scrollTop, scrollHeight, clientHeight } = event.target;
+  const threshold = 200; // Load more when 200px from bottom
+
+  if (scrollHeight - scrollTop - clientHeight < threshold) {
+    loadMoreServices();
   }
 }
 
@@ -467,11 +540,9 @@ async function retryDataFetch() {
 
 // --- Computed Properties ---
 
-// Get top 20 services by popularity
+// Get all loaded services by popularity (no limit since we use pagination)
 const topServices = computed(() => {
-  return [...allServices.value]
-    .sort((a, b) => b.popularity - a.popularity)
-    .slice(0, 20);
+  return [...allServices.value].sort((a, b) => b.popularity - a.popularity);
 });
 
 // This will be the main computed property to drive the display
@@ -594,6 +665,8 @@ const clearCategoryFilter = () => {
   selectedCategoryFilter.value = null;
   isFilterDropdownOpen.value = false;
   categoryServices.value = [];
+  currentPage.value = 0;
+  hasMoreServices.value = true;
 };
 
 const toggleFilterDropdown = () => {
@@ -604,17 +677,22 @@ const toggleFilterDropdown = () => {
 watch(
   searchQuery,
   async (newQuery) => {
+    // Reset pagination when search changes
+    currentPage.value = 0;
+    hasMoreServices.value = true;
+
     if (newQuery.trim() && !selectedCategoryFilter.value) {
       // Only search across all services if no category is selected
       try {
         const searchResults = await searchAllServices(newQuery.trim());
         allServices.value = searchResults;
+        hasMoreServices.value = false; // Disable infinite scroll for search results
       } catch (error) {
         console.error('Error searching services:', error);
       }
     } else if (!newQuery.trim() && !selectedCategoryFilter.value) {
       // Reset to top services when search is cleared
-      await fetchTopServices();
+      await fetchTopServices(0, false);
     }
   },
   { debounce: 300 }

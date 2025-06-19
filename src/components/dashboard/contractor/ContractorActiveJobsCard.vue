@@ -1,13 +1,17 @@
 <template>
   <div class="card-sm">
     <div class="card-content-sm">
-      <h3 class="card-title-sm">Active Jobs</h3>
-      <div v-if="loading" class="loading-text">Loading...</div>
+      <h3 class="card-title-sm">
+        {{ $t('contractorDashboard.activeJobsLabel') }}
+      </h3>
+      <div v-if="loading" class="loading-text">{{ $t('common.loading') }}</div>
       <div v-else-if="error" class="error-text">Error loading.</div>
       <div v-else class="data-grid">
         <div class="data-item">
           <span class="data-value-lg">{{ activeJobsCount }}</span>
-          <span class="data-label-sm">Active</span>
+          <span class="data-label-sm">{{
+            $t('contractorDashboard.activeLabel')
+          }}</span>
         </div>
         <div class="data-item">
           <span class="data-value-lg"
@@ -21,7 +25,7 @@
         @click="viewActiveJobs"
         class="button-secondary-sm mt-2"
       >
-        View Active Jobs
+        {{ $t('contractorDashboard.viewActiveJobsButton') }}
       </button>
     </div>
   </div>

@@ -52,8 +52,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';
+
+const { t } = useI18n();
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -65,18 +68,18 @@ const searchQuery = ref('');
 const selectedServices = ref([...props.modelValue]);
 
 // Service categories based on the existing codebase
-const serviceCategories = [
+const serviceCategories = computed(() => [
   {
     name: 'Home Repair',
     services: [
       'AC Repair',
       'Electrical Repairs',
-      'Plumbing Fixes',
-      'Carpentry',
+      t('services.plumbingFixes'),
+      t('services.carpentry'),
       'Locksmith',
       'Appliance Repair',
       'Roofing',
-      'Painting',
+      t('services.painting'),
     ],
   },
   {
@@ -131,12 +134,12 @@ const serviceCategories = [
       'Network Setup',
     ],
   },
-];
+]);
 
 const filteredCategories = computed(() => {
-  if (!searchQuery.value) return serviceCategories;
+  if (!searchQuery.value) return serviceCategories.value;
 
-  return serviceCategories
+  return serviceCategories.value
     .map((category) => ({
       ...category,
       services: category.services.filter((service) =>

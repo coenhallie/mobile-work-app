@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col min-h-screen bg-white dark:bg-gray-900">
     <!-- Welcome Banner -->
-    <div class="welcome-banner w-full text-foreground p-6 mb-8 rounded-xl">
+    <div class="welcome-banner w-full text-foreground p-6 mb-3 rounded-xl">
       <div class="max-w-6xl mx-auto">
         <!-- Content -->
         <div>
@@ -30,7 +30,7 @@
                 <!-- Use getCachedBustedImageUrl from useProfileState -->
                 <div
                   v-if="getCachedBustedImageUrl"
-                  class="h-14 w-14 rounded-full hover:scale-110 transition-transform overflow-hidden cursor-pointer"
+                  class="h-20 w-20 rounded-full hover:scale-110 transition-transform overflow-hidden cursor-pointer"
                   @click="navigateToUserProfile"
                 >
                   <img
@@ -43,7 +43,7 @@
                 <!-- Otherwise fall back to a simple profile button -->
                 <div
                   v-else
-                  class="h-14 w-14 rounded-full bg-primary hover:scale-110 transition-transform cursor-pointer flex items-center justify-center text-white font-bold text-lg"
+                  class="h-20 w-20 rounded-full bg-primary hover:scale-110 transition-transform cursor-pointer flex items-center justify-center text-white font-bold text-xl"
                   @click="navigateToUserProfile"
                 >
                   {{
@@ -732,13 +732,18 @@ const filteredContractorDisplayJobs = computed(() => {
     return contractorJobs.value; // Already filtered for active statuses
   }
   if (view === 'opportunities') {
+    // Add null check to prevent uninitialized variable errors
+    if (!contractorProfile.value) {
+      return [];
+    }
+
     const contractorSkills = contractorProfile.value?.skills || [];
     const contractorServiceAreas = contractorProfile.value?.service_areas || [];
 
     console.log('[DEBUG] Filtering opportunities for contractor:', {
       contractorId: contractorProfile.value?.id,
       skills: contractorSkills,
-      serviceIds: contractorProfile.value?.service_ids,
+      serviceIds: contractorProfile.value?.service_ids || [],
       serviceAreas: contractorServiceAreas.slice(0, 5), // Show first 5 for brevity
       totalServiceAreas: contractorServiceAreas.length,
       totalJobs: openJobs.value.length,
@@ -799,24 +804,29 @@ const filteredContractorDisplayJobs = computed(() => {
         );
 
         // Check service_ids match (most reliable matching)
-        const serviceIdsMatch = contractorProfile.value?.service_ids?.some(
-          (serviceId) => job.service_id === serviceId
-        );
+        const serviceIdsMatch =
+          contractorProfile.value?.service_ids?.length > 0 &&
+          contractorProfile.value.service_ids.some(
+            (serviceId) => job.service_id === serviceId
+          );
 
         // Check service keywords match
         const serviceKeywordsMatch = contractorSkills.some((skill) => {
           const skillLower = skill.toLowerCase();
           const baseSkill = skillLower.split(/[\s(]/)[0].trim();
 
-          return job.service_keywords?.some((keyword) => {
-            const keywordLower = keyword.toLowerCase();
-            return (
-              skillLower.includes(keywordLower) ||
-              keywordLower.includes(skillLower) ||
-              baseSkill.includes(keywordLower) ||
-              keywordLower.includes(baseSkill)
-            );
-          });
+          return (
+            job.service_keywords?.length > 0 &&
+            job.service_keywords.some((keyword) => {
+              const keywordLower = keyword.toLowerCase();
+              return (
+                skillLower.includes(keywordLower) ||
+                keywordLower.includes(skillLower) ||
+                baseSkill.includes(keywordLower) ||
+                keywordLower.includes(baseSkill)
+              );
+            })
+          );
         });
 
         const matches =

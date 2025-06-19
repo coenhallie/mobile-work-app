@@ -329,6 +329,7 @@
 
 <script setup>
 import { ref, computed, reactive, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useGeolocation } from '@/composables/useGeolocation';
 import { useAuth } from '@/composables/useAuth';
 
@@ -357,6 +358,7 @@ const {
   getCurrentPosition,
 } = useGeolocation();
 const { isSignedIn } = useAuth();
+const { t } = useI18n();
 
 // State
 const showAdvancedFilters = ref(false);
@@ -388,9 +390,9 @@ const filters = reactive({
 
 // Quick filter options
 const quickFilterOptions = [
-  { value: 'top-rated', label: 'Top Rated' },
-  { value: 'nearby', label: 'Nearby' },
-  { value: 'available-now', label: 'Available Now' },
+  { value: 'top-rated', label: t('contractors.topRated') },
+  { value: 'nearby', label: t('contractors.nearby') },
+  { value: 'available-now', label: t('contractors.availableNow') },
 ];
 
 // Filter options
@@ -416,10 +418,10 @@ const ratingOptions = [
 ];
 
 const sortOptions = [
-  { value: 'rating', label: 'Highest Rated' },
-  { value: 'experience', label: 'Most Experienced' },
-  { value: 'distance', label: 'Nearest' },
-  { value: 'name', label: 'Name A-Z' },
+  { value: 'rating', label: t('contractors.highestRated') },
+  { value: 'experience', label: t('contractors.mostExperienced') },
+  { value: 'distance', label: t('contractors.nearest') },
+  { value: 'name', label: t('contractors.nameAZ') },
 ];
 
 // Computed properties

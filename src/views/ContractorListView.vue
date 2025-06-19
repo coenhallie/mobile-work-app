@@ -5,10 +5,10 @@
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-normal text-gray-900 dark:text-white mb-2">
-        Find Contractors
+        {{ $t('contractors.findContractors') }}
       </h1>
       <p class="text-gray-600 dark:text-gray-400 text-sm">
-        Browse and connect with skilled professionals in your area
+        {{ $t('contractors.browseAndConnect') }}
       </p>
     </div>
 
@@ -29,7 +29,7 @@
 
     <!-- Results Count -->
     <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-      {{ totalCount }} contractors found
+      {{ $t('contractors.contractorsFound', { count: totalCount }) }}
     </div>
 
     <!-- Contractor Grid with Infinite Scroll -->
@@ -41,21 +41,24 @@
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
       >
-        <!-- Contractor Cards -->
-        <ContractorCard
-          v-for="contractor in contractors"
-          :key="contractor.id"
-          :contractor="contractor"
-          @click="viewContractorProfile"
-          @contact="handleContact"
-        />
-
-        <!-- Loading Skeletons -->
-        <ContractorCardSkeleton
-          v-for="n in skeletonCount"
-          :key="`skeleton-${n}`"
-          v-show="isLoading"
-        />
+        <!-- Show either contractor cards OR skeleton cards, never both -->
+        <template v-if="isLoading && contractors.length === 0">
+          <!-- Loading Skeletons -->
+          <ContractorCardSkeleton
+            v-for="n in skeletonCount"
+            :key="`skeleton-${n}`"
+          />
+        </template>
+        <template v-else-if="!isLoading && contractors.length > 0">
+          <!-- Contractor Cards -->
+          <ContractorCard
+            v-for="contractor in contractors"
+            :key="contractor.id"
+            :contractor="contractor"
+            @click="viewContractorProfile"
+            @contact="handleContact"
+          />
+        </template>
       </div>
     </InfiniteScrollContainer>
 
@@ -101,7 +104,10 @@ import ContractorFilters from '@/components/contractors/ContractorFilters.vue';
 import InfiniteScrollContainer from '@/components/contractors/InfiniteScrollContainer.vue';
 import { useContractorData } from '@/composables/useContractorData';
 import { useAuth } from '@/composables/useAuth';
-import { getFavorites } from '@/composables/useFavoriteContractors';
+import {
+  getFavorites,
+  favoriteContractorIds,
+} from '@/composables/useFavoriteContractors';
 
 const router = useRouter();
 const route = useRoute();
@@ -140,6 +146,7 @@ const activeFilters = ref({
 
 // UI state
 const skeletonCount = ref(6);
+const isMounted = ref(false);
 
 // Current filters for data fetching
 const currentFilters = ref({});
@@ -168,6 +175,13 @@ const handleSearch = (query) => {
 };
 
 const handleFilterChange = (filters) => {
+  console.log('🔍 [DEBUG] Filter change detected:', {
+    newFilters: filters,
+    currentActiveFilters: activeFilters.value,
+    showFavoritesOnly: filters.showFavoritesOnly,
+    isSignedIn: isSignedIn.value,
+  });
+
   activeFilters.value = { ...activeFilters.value, ...filters };
   updateFiltersAndReload();
 };
@@ -184,65 +198,148 @@ const clearFilters = () => {
   updateFiltersAndReload();
 };
 
-const updateFiltersAndReload = () => {
+const updateFiltersAndReload = async () => {
+  // Lazy load favorites if the filter is active and user is signed in
+  if (activeFilters.value.showFavoritesOnly && isSignedIn.value) {
+    try {
+      console.log(
+        'ContractorListView: Favorites filter active, ensuring favorites are loaded...'
+      );
+      await getFavorites(); // From useFavoriteContractors
+      await nextTick(); // Ensure reactive changes from getFavorites propagate
+      console.log('ContractorListView: Favorites loaded/updated.');
+    } catch (error) {
+      console.warn(
+        'ContractorListView: Failed to load favorites for filter:',
+        error
+      );
+      // Optionally, handle this error, e.g., by turning off the favorites filter
+      // activeFilters.value.showFavoritesOnly = false;
+    }
+  }
+
   // Convert UI filters to data layer format
   currentFilters.value = {
     search: searchQuery.value,
     serviceType: activeFilters.value.serviceType,
-    location: activeFilters.value.location, // This might be complex if using new location filters
+    location: activeFilters.value.location,
     minRating: activeFilters.value.minRating,
     sortBy: activeFilters.value.sortBy,
-    sortOrder: 'desc', // Assuming desc, adjust if sort order is also in activeFilters
+    sortOrder: 'desc',
     showFavoritesOnly: activeFilters.value.showFavoritesOnly,
-    // Include new location filter properties from activeFilters if they exist
     locationType: activeFilters.value.locationType,
     selectedDistricts: activeFilters.value.selectedDistricts,
     gpsLocation: activeFilters.value.gpsLocation,
     gpsRadius: activeFilters.value.gpsRadius,
   };
 
-  resetContractors();
-  loadContractors(currentFilters.value);
+  // Reset state without triggering multiple renders (this part was from a previous fix)
+  contractors.value = [];
+  hasMore.value = true;
+  // totalCount is handled by loadContractors
+
+  await loadContractors(currentFilters.value); // From useContractorData
 };
 
 const loadMoreContractors = () => {
   loadMore(currentFilters.value);
 };
 
-// Watchers for reactive filtering
+// Watchers for reactive filtering (only for user interactions, not initial load)
 watch(
   [searchQuery, activeFilters],
-  () => {
-    updateFiltersAndReload();
+  (newValues, oldValues) => {
+    console.log('🔍 [DEBUG] Watcher triggered!');
+    console.log('🔍 [DEBUG] isMounted:', isMounted.value);
+    console.log('🔍 [DEBUG] New values:', newValues);
+    console.log('🔍 [DEBUG] Old values:', oldValues);
+    console.log('🔍 [DEBUG] Current state:', {
+      isLoading: isLoading.value,
+      contractors: contractors.value.length,
+      totalCount: totalCount.value,
+    });
+
+    // Only reload if component is already mounted to avoid double loading
+    if (isMounted.value) {
+      console.log('🔍 [DEBUG] Watcher calling updateFiltersAndReload...');
+      updateFiltersAndReload();
+    } else {
+      console.log('🔍 [DEBUG] Watcher skipped - component not mounted yet');
+    }
   },
-  { deep: true }
+  { deep: true, immediate: false }
+);
+
+// Watch isLoading state changes to track template rendering logic
+watch(
+  isLoading,
+  (newValue, oldValue) => {
+    console.log('🔍 [DEBUG] isLoading changed:', {
+      from: oldValue,
+      to: newValue,
+      contractors: contractors.value.length,
+      totalCount: totalCount.value,
+      templateCondition1: !newValue && contractors.value.length > 0,
+      templateCondition2: newValue,
+      templateCondition3: !newValue && contractors.value.length === 0,
+    });
+  },
+  { immediate: true }
+);
+
+// Watch contractors array changes
+watch(
+  contractors,
+  (newValue, oldValue) => {
+    console.log('🔍 [DEBUG] contractors array changed:', {
+      from: oldValue?.length || 0,
+      to: newValue?.length || 0,
+      isLoading: isLoading.value,
+      totalCount: totalCount.value,
+    });
+  },
+  { immediate: true }
+);
+
+// Watch totalCount changes
+watch(
+  totalCount,
+  (newValue, oldValue) => {
+    console.log('🔍 [DEBUG] totalCount changed:', {
+      from: oldValue,
+      to: newValue,
+      isLoading: isLoading.value,
+      contractors: contractors.value.length,
+    });
+  },
+  { immediate: true }
 );
 
 // Initial load
 onMounted(async () => {
-  console.log('ContractorListView: onMounted started');
+  console.log('🔍 [DEBUG] ContractorListView onMounted - START');
+  console.log('🔍 [DEBUG] Initial state:', {
+    isLoading: isLoading.value,
+    contractors: contractors.value.length,
+    totalCount: totalCount.value,
+    isSignedIn: isSignedIn.value,
+  });
 
-  // Load user's favorites first if signed in
-  if (isSignedIn.value) {
-    try {
-      console.log('ContractorListView: Loading favorites...');
-      await getFavorites();
-      console.log(
-        'ContractorListView: Favorites loaded, waiting for reactive state update...'
-      );
+  // Don't load favorites on mount to prevent flicker - they'll be loaded when needed
 
-      // Wait for reactive state to be properly updated
-      await nextTick();
-      console.log(
-        'ContractorListView: Reactive state updated, proceeding with filters'
-      );
-    } catch (error) {
-      console.warn('Failed to load favorites:', error);
-    }
-  }
+  console.log('🔍 [DEBUG] About to call updateFiltersAndReload...');
+  await updateFiltersAndReload();
+  console.log('🔍 [DEBUG] updateFiltersAndReload completed, final state:', {
+    isLoading: isLoading.value,
+    contractors: contractors.value.length,
+    totalCount: totalCount.value,
+  });
 
-  console.log('ContractorListView: Calling updateFiltersAndReload');
-  updateFiltersAndReload();
+  // Mark as mounted to enable watchers
+  isMounted.value = true;
+  console.log(
+    '🔍 [DEBUG] ContractorListView onMounted - END, isMounted set to true'
+  );
 });
 </script>
 

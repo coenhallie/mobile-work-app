@@ -74,7 +74,7 @@
           @click.stop="$emit('view-jobs')"
           class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
         >
-          View Jobs
+          {{ $t('onboarding.viewJobsButton') }}
         </button>
 
         <!-- Arrow -->

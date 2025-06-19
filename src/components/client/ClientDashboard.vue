@@ -8,7 +8,7 @@
           class="w-full bg-black dark:bg-white text-white dark:text-black px-6 py-4 rounded-lg font-medium text-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
         >
           <Plus class="w-5 h-5 inline mr-2" />
-          Post Job
+          {{ $t('clientDashboard.postJobButton') }}
         </button>
       </div>
 
@@ -25,7 +25,9 @@
           <div class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ totalJobsCount }}
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {{ $t('clientDashboard.totalLabel') }}
+          </div>
         </button>
 
         <button
@@ -40,7 +42,7 @@
             {{ activeJobsCount }}
           </div>
           <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Active
+            {{ $t('clientDashboard.activeLabel') }}
           </div>
         </button>
 
@@ -56,7 +58,7 @@
             {{ totalApplicationsCount }}
           </div>
           <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Applications
+            {{ $t('clientDashboard.applicationsLabel') }}
           </div>
         </button>
 
@@ -71,7 +73,9 @@
           <div class="text-2xl font-bold text-gray-600">
             {{ completedJobsCount }}
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Done</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {{ $t('clientDashboard.doneLabel') }}
+          </div>
         </button>
       </div>
     </div>
@@ -167,6 +171,16 @@
             </button>
           </div>
 
+          <!-- Applications View -->
+          <div v-else-if="activeView === 'applications'">
+            <ApplicationsList
+              :applications="allApplications"
+              @select-applicant="selectApplicant"
+              @reject-applicant="rejectApplicant"
+              @send-message="sendMessageToContractor"
+            />
+          </div>
+
           <!-- Jobs List -->
           <div v-else>
             <!-- Grid View (Cards) -->
@@ -178,13 +192,15 @@
               >
                 <ClientJobCard
                   :job="job"
+                  :applications="job.applications || []"
                   :view-mode="viewMode"
-                  :applications="jobApplicationsData[job.id] || []"
                   @view-details="viewJobDetails"
                   @edit-job="editJob"
                   @view-applications="viewApplications"
                   @mark-completed="markJobCompleted"
                   @delete-job="deleteJob"
+                  @view-applicant-details="viewApplicantDetails"
+                  @select-contractor="selectContractor"
                   class="border-0 p-0 bg-transparent"
                 />
               </div>
@@ -199,13 +215,15 @@
               >
                 <ClientJobCard
                   :job="job"
+                  :applications="job.applications || []"
                   :view-mode="viewMode"
-                  :applications="jobApplicationsData[job.id] || []"
                   @view-details="viewJobDetails"
                   @edit-job="editJob"
                   @view-applications="viewApplications"
                   @mark-completed="markJobCompleted"
                   @delete-job="deleteJob"
+                  @view-applicant-details="viewApplicantDetails"
+                  @select-contractor="selectContractor"
                   class="border-0 p-0 bg-transparent"
                 />
               </div>
@@ -278,6 +296,7 @@ import {
   Filter,
 } from 'lucide-vue-next';
 import ClientJobCard from './ClientJobCard.vue';
+import ApplicationsList from './ApplicationsList.vue';
 import { useJobStore } from '@/stores/job';
 import { useJobApplicationsStore } from '@/stores/jobApplications';
 
@@ -294,6 +313,8 @@ const isLoading = ref(false);
 const isLoadingMore = ref(false);
 const hasMoreJobs = ref(false);
 const recentActivity = ref([]);
+const jobApplicationsMap = ref(new Map());
+const allApplications = ref([]);
 
 // Props
 const props = defineProps({
@@ -305,9 +326,13 @@ const props = defineProps({
 
 // Computed properties
 const jobs = computed(() => jobStore.userJobs || []);
-const jobApplicationsData = computed(
-  () => jobApplicationsStore.applicationsByJob || {}
-);
+
+const jobsWithApplications = computed(() => {
+  return jobs.value.map((job) => ({
+    ...job,
+    applications: jobApplicationsMap.value.get(job.id) || [],
+  }));
+});
 
 const totalJobsCount = computed(() => jobs.value.length);
 const activeJobsCount = computed(
@@ -319,14 +344,11 @@ const completedJobsCount = computed(
   () => jobs.value.filter((job) => job.status === 'completed').length
 );
 const totalApplicationsCount = computed(() =>
-  Object.values(jobApplicationsData.value).reduce(
-    (total, apps) => total + apps.length,
-    0
-  )
+  jobs.value.reduce((total, job) => total + (job.applicant_count || 0), 0)
 );
 
 const filteredJobs = computed(() => {
-  let filtered = [...jobs.value];
+  let filtered = [...jobsWithApplications.value];
 
   // Filter by active view
   switch (activeView.value) {
@@ -339,9 +361,7 @@ const filteredJobs = computed(() => {
       filtered = filtered.filter((job) => job.status === 'completed');
       break;
     case 'applications':
-      filtered = filtered.filter(
-        (job) => (jobApplicationsData.value[job.id]?.length || 0) > 0
-      );
+      filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
       break;
     // 'all' shows everything
   }
@@ -353,9 +373,7 @@ const filteredJobs = computed(() => {
       break;
     case 'applications':
       filtered.sort(
-        (a, b) =>
-          (jobApplicationsData.value[b.id]?.length || 0) -
-          (jobApplicationsData.value[a.id]?.length || 0)
+        (a, b) => (b.applicant_count || 0) - (a.applicant_count || 0)
       );
       break;
     case 'status':
@@ -367,8 +385,29 @@ const filteredJobs = computed(() => {
 });
 
 // Methods
-const setActiveView = (view) => {
+const setActiveView = async (view) => {
   activeView.value = view;
+
+  // Fetch all applications when switching to applications view
+  if (view === 'applications') {
+    await fetchAllApplications();
+  }
+};
+
+// Fetch all applications for the client's jobs
+const fetchAllApplications = async () => {
+  try {
+    isLoading.value = true;
+    const applications = await jobApplicationsStore.getAllApplicationsForClient(
+      props.userId
+    );
+    allApplications.value = applications;
+  } catch (error) {
+    console.error('Error fetching all applications:', error);
+    allApplications.value = [];
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const getViewTitle = () => {
@@ -455,6 +494,87 @@ const deleteJob = async (job) => {
   }
 };
 
+const viewApplicantDetails = (applicant) => {
+  router.push(`/contractor/${applicant.contractor_user_id}`);
+};
+
+// New methods for ApplicationsList component
+const selectApplicant = async (application) => {
+  try {
+    const result = await jobApplicationsStore.selectContractor(
+      application.jobId,
+      application.id
+    );
+
+    if (result.success) {
+      // Refresh applications list
+      await fetchAllApplications();
+      // Optionally show success message
+      console.log('Contractor selected successfully');
+    }
+  } catch (error) {
+    console.error('Error selecting applicant:', error);
+  }
+};
+
+const rejectApplicant = async (application) => {
+  if (confirm(t('dashboard.confirmRejectApplication'))) {
+    try {
+      await jobApplicationsStore.updateApplicationStatus(
+        application.id,
+        'rejected'
+      );
+      // Refresh applications list
+      await fetchAllApplications();
+    } catch (error) {
+      console.error('Error rejecting applicant:', error);
+    }
+  }
+};
+
+const sendMessageToContractor = async (application) => {
+  // Navigate to chat with the contractor
+  router.push(`/messages?contractor=${application.contractor.userId}`);
+};
+
+const selectContractor = async (applicant) => {
+  try {
+    const result = await jobApplicationsStore.selectContractor(
+      applicant.job_id,
+      applicant.id
+    );
+
+    if (result.success) {
+      // Refresh applications for this job
+      await fetchApplicationsForJob(applicant.job_id);
+      // Optionally show success message
+    } else {
+      console.error('Error selecting contractor:', result.error);
+    }
+  } catch (error) {
+    console.error('Error selecting contractor:', error);
+  }
+};
+
+const fetchApplicationsForJob = async (jobId) => {
+  try {
+    const applications = await jobApplicationsStore.getJobApplications(jobId);
+    jobApplicationsMap.value.set(jobId, applications);
+  } catch (error) {
+    console.error(`Error fetching applications for job ${jobId}:`, error);
+  }
+};
+
+const fetchApplicationsForJobsWithApplications = async () => {
+  const jobsWithApps = jobs.value.filter(
+    (job) => (job.applicant_count || 0) > 0
+  );
+
+  for (const job of jobsWithApps) {
+    await fetchApplicationsForJob(job.id);
+  }
+};
+
 const formatActivityTime = (timestamp) => {
   const date = new Date(timestamp);
   const now = new Date();
@@ -474,6 +594,8 @@ onMounted(async () => {
   isLoading.value = true;
   try {
     await jobStore.fetchJobsByUser(props.userId);
+    // Fetch applications for jobs that have applications
+    await fetchApplicationsForJobsWithApplications();
   } finally {
     isLoading.value = false;
   }

@@ -66,7 +66,11 @@
       <CardFooter class="flex justify-between">
         <Button variant="outline" @click="handleSkip">Skip for Now</Button>
         <Button @click="handleSave" :disabled="isSaving">
-          {{ isSaving ? 'Saving...' : 'Save & Continue' }}
+          {{
+            isSaving
+              ? $t('onboarding.savingText')
+              : $t('onboarding.saveContinueButton')
+          }}
         </Button>
       </CardFooter>
     </Card>

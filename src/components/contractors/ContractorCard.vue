@@ -261,9 +261,9 @@ const availabilityText = computed(() => {
   const busyUntil = props.contractor.busyUntil;
 
   if (status === 'available' && isCurrentlyAvailable) {
-    return 'Available now';
+    return t('availability.availableNow');
   } else if (status === 'available' && !isCurrentlyAvailable) {
-    return 'Outside working hours';
+    return t('availability.outsideWorkingHours');
   } else if (status === 'busy') {
     if (busyUntil) {
       const busyDate = new Date(busyUntil);

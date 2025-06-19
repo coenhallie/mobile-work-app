@@ -5,10 +5,10 @@
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-normal text-gray-900 dark:text-white mb-2">
-        Messages
+        {{ $t('messages.title') }}
       </h1>
       <p class="text-gray-600 dark:text-gray-400 text-sm">
-        Your conversations and chat history
+        {{ $t('messages.conversationsDescription') }}
       </p>
     </div>
 

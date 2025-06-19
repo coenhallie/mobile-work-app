@@ -67,14 +67,19 @@ export function useFavoriteContractors() {
    *                                            along with data or an error message.
    */
   const getFavorites = async () => {
+    console.log('🔍 [DEBUG] getFavorites called - START');
     const userId = await getCurrentUserId();
     const isSignedIn = await isUserSignedIn();
 
     if (!isSignedIn || !userId) {
+      console.log(
+        '🔍 [DEBUG] getFavorites - User not authenticated, clearing favorites'
+      );
       clearLocalFavorites();
       return { success: false, error: 'User not authenticated' };
     }
 
+    console.log('🔍 [DEBUG] getFavorites - Setting loading states to true');
     globalIsFetchingFavorites.value = true;
     globalIsLoading.value = true;
     globalOperationError.value = null;
@@ -89,16 +94,23 @@ export function useFavoriteContractors() {
       }
 
       const newFavoriteIds = new Set(data.map((fav) => fav.contractor_id));
+      console.log(
+        '🔍 [DEBUG] getFavorites - Setting favorite IDs:',
+        newFavoriteIds.size
+      );
       globalFavoriteContractorIds.value = newFavoriteIds;
+      console.log('🔍 [DEBUG] getFavorites - SUCCESS, returning data');
       return { success: true, data: Array.from(newFavoriteIds) };
     } catch (err) {
-      console.error('Error fetching favorites:', err);
+      console.error('🔍 [DEBUG] getFavorites - Error fetching favorites:', err);
       globalOperationError.value = err.message || 'Error loading favorites';
       // Don't clear local favorites on fetch error, might be temporary network issue
       return { success: false, error: globalOperationError.value };
     } finally {
+      console.log('🔍 [DEBUG] getFavorites - Setting loading states to false');
       globalIsFetchingFavorites.value = false;
       globalIsLoading.value = false;
+      console.log('🔍 [DEBUG] getFavorites - END');
     }
   };
 

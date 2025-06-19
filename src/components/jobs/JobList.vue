@@ -242,6 +242,7 @@
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Card } from '@/components/ui/card';
 import Button from '@/components/ui/button/Button.vue';
 import JobStatusIndicator from './JobStatusIndicator.vue';
@@ -249,6 +250,8 @@ import JobActionButton from './JobActionButton.vue';
 import JobImageCarousel from './JobImageCarousel.vue';
 import { useJobApplicationsStore } from '@/stores/jobApplications';
 import { useAuth } from '@/composables/useAuth';
+
+const { t } = useI18n();
 
 const props = defineProps({
   jobs: {
@@ -317,7 +320,7 @@ const formatDate = (dateString) => {
   const diffTime = Math.abs(now - date);
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 1) return 'Yesterday';
+  if (diffDays === 1) return t('time.yesterday');
   if (diffDays < 7) return `${diffDays} days ago`;
   if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
   return date.toLocaleDateString();

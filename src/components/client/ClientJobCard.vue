@@ -27,7 +27,7 @@
       <div
         :class="[
           'bg-gradient-to-t from-black/70 via-black/50 to-transparent',
-          'p-3 mx-0 -mb-2',
+          'p-3 mx-0',
         ]"
       >
         <div class="flex items-start justify-between">
@@ -76,6 +76,7 @@
         v-if="job.status"
         :status="job.status"
         :label="getStatusLabel(job.status)"
+        class="m-2"
       />
     </template>
 
@@ -99,7 +100,7 @@
             {{ $t('common.edit') }}
           </DropdownMenuItem>
           <DropdownMenuItem
-            v-if="applications.length > 0"
+            v-if="(job.applicant_count || 0) > 0"
             @click.stop="$emit('view-applications', job)"
           >
             <Users class="w-4 h-4 mr-2" />
@@ -134,7 +135,7 @@
     <template #description>
       <p
         :class="[
-          'text-gray-600 dark:text-gray-300 mt-1',
+          'text-gray-600 dark:text-gray-300 mt-3',
           viewMode === 'cards'
             ? 'text-xs line-clamp-2'
             : 'text-sm line-clamp-2',
@@ -147,17 +148,32 @@
     <template #meta-info>
       <div
         :class="[
-          'flex items-center text-gray-500 dark:text-gray-400 mt-1 flex-wrap',
-          viewMode === 'cards' ? 'space-x-2 text-xs' : 'space-x-3 text-sm',
+          'flex items-center text-gray-500 dark:text-gray-400 mt-0 flex-wrap',
+          viewMode === 'cards' ? 'gap-3 text-xs' : 'gap-4 text-sm',
         ]"
       >
         <JobLocationDisplay
           :location-text="job.location_text"
           class="min-w-0"
         />
-        <div class="flex items-center space-x-1 whitespace-nowrap min-w-0">
-          <Calendar :class="viewMode === 'cards' ? 'w-3 h-3' : 'w-4 h-4'" />
+        <div class="flex items-center whitespace-nowrap min-w-0">
+          <Calendar
+            :class="[viewMode === 'cards' ? 'w-4 h-4' : 'w-4 h-4', 'mr-1.5']"
+          />
           <span>{{ formatStandardDate(job.created_at) }}</span>
+        </div>
+        <div class="flex items-center whitespace-nowrap min-w-0">
+          <Users
+            :class="[viewMode === 'cards' ? 'w-4 h-4' : 'w-4 h-4', 'mr-1.5']"
+          />
+          <span class="font-medium"
+            >{{ job.applicant_count || 0 }}
+            {{
+              (job.applicant_count || 0) === 1
+                ? $t('dashboard.applicationCount.singular')
+                : $t('dashboard.applicationCount.plural')
+            }}</span
+          >
         </div>
         <span
           v-if="job.budget_min && job.budget_max"
@@ -174,34 +190,72 @@
     <template #content-extra>
       <!-- This section is client-specific, styled to fit -->
       <!-- Applications Summary -->
-      <div v-if="applications.length > 0" class="mt-1">
-        <div class="flex items-center justify-between mb-2">
-          <h4
-            :class="[
-              'font-semibold text-gray-700 dark:text-gray-200',
-              viewMode === 'cards' ? 'text-xs' : 'text-sm',
-            ]"
+      <div v-if="(job.applicant_count || 0) > 0" class="mt-3">
+        <!-- View Applications Button -->
+        <div class="mb-2" @click.stop>
+          <button
+            @click="toggleApplicationsView"
+            class="text-xs text-primary hover:underline flex items-center p-0 m-0 bg-transparent border-none cursor-pointer"
           >
-            {{ applications.length }}
             {{
-              applications.length === 1
-                ? $t('dashboard.applicationCount.singular')
-                : $t('dashboard.applicationCount.plural')
+              showApplications
+                ? $t('dashboard.hideApplications')
+                : $t('dashboard.viewApplications')
             }}
-          </h4>
-          <Button
-            variant="link"
-            size="sm"
-            @click.stop="$emit('view-applications', job)"
-            class="text-xs h-6 px-1 py-0 text-primary hover:underline"
-          >
-            {{ $t('dashboard.viewAll') }}
-            <ChevronRight class="w-3 h-3 ml-1" />
-          </Button>
+            ({{ job.applicant_count || 0 }})
+            <ChevronDown
+              :class="[
+                'w-3 h-3 ml-1 transition-transform duration-200',
+                showApplications ? 'rotate-180' : '',
+              ]"
+            />
+          </button>
         </div>
 
-        <!-- Application Status Summary - More compact in list view -->
+        <!-- Expandable Applications Section -->
+        <Transition
+          name="slide-down"
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 max-h-0 overflow-hidden"
+          enter-to-class="opacity-100 max-h-96 overflow-hidden"
+          leave-active-class="transition-all duration-300 ease-in"
+          leave-from-class="opacity-100 max-h-96 overflow-hidden"
+          leave-to-class="opacity-0 max-h-0 overflow-hidden"
+        >
+          <div v-if="showApplications" class="space-y-2 mb-3" @click.stop>
+            <!-- Show up to 3 compact applicant cards -->
+            <div v-if="applications.length > 0" class="space-y-2">
+              <CompactApplicantCard
+                v-for="applicant in applications.slice(0, 3)"
+                :key="applicant.id"
+                :applicant="applicant"
+                @view-details="$emit('view-applicant-details', applicant)"
+                @select-contractor="$emit('select-contractor', applicant)"
+              />
+            </div>
+
+            <!-- Show "View All" button if there are more than 3 applications -->
+            <div
+              v-if="applications.length > 3"
+              class="flex items-center justify-center pt-2"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                @click.stop="$emit('view-applications', job)"
+                class="text-xs h-7 px-3"
+              >
+                {{ $t('dashboard.viewAll') }} {{ applications.length }}
+                {{ $t('dashboard.applicationCount.plural') }}
+                <ChevronRight class="w-3 h-3 ml-1" />
+              </Button>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Application Status Summary - Only visible when applications are expanded -->
         <div
+          v-if="showApplications"
           :class="
             viewMode === 'list'
               ? 'flex items-center gap-1 mb-2 flex-wrap'
@@ -224,48 +278,14 @@
             :label="`${applicationStats.rejected} ${$t('dashboard.rejected')}`"
           />
         </div>
-
-        <!-- Recent Applicants Preview - Show smaller avatars in grid view -->
-        <div v-if="viewMode === 'cards'" class="flex -space-x-1 mb-2">
-          <img
-            v-for="applicant in applications.slice(0, 2)"
-            :key="applicant.id"
-            :src="
-              applicant.contractor_profiles?.avatar_url ||
-              '/images/contractor-default.svg'
-            "
-            :alt="applicant.contractor_profiles?.full_name || 'Contractor'"
-            :title="applicant.contractor_profiles?.full_name || 'Contractor'"
-            class="w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 object-cover"
-          />
-          <div
-            v-if="applications.length > 2"
-            class="w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400"
-          >
-            +{{ applications.length - 2 }}
-          </div>
-        </div>
-      </div>
-
-      <!-- No Applications State -->
-      <div
-        v-else
-        :class="
-          viewMode === 'list'
-            ? 'text-sm text-gray-500 dark:text-gray-400 py-1 text-left mt-1'
-            : 'text-sm text-gray-500 dark:text-gray-400 py-2 text-left mt-1'
-        "
-      >
-        <Users class="w-5 h-5 mr-2 mb-1 text-gray-400 inline-block" />
-        {{ $t('dashboard.noApplicationsYet') }}
       </div>
     </template>
 
     <template #actions>
-      <div class="flex items-center justify-end">
+      <div class="flex items-center justify-end pb-1">
         <div class="flex items-center gap-2">
           <Button
-            v-if="job.status === 'open' && applications.length === 0"
+            v-if="job.status === 'open' && (job.applicant_count || 0) === 0"
             variant="outline"
             size="sm"
             @click.stop="$emit('edit-job', job)"
@@ -273,15 +293,6 @@
           >
             <Edit class="w-3 h-3 mr-1.5" />
             {{ $t('common.edit') }}
-          </Button>
-          <Button
-            v-else-if="applications.length > 0"
-            size="sm"
-            @click.stop="$emit('view-applications', job)"
-            class="h-8 px-3 text-xs"
-          >
-            <Users class="w-3 h-3 mr-1.5" />
-            {{ $t('dashboard.viewApplications') }} ({{ applications.length }})
           </Button>
           <!-- Fallback "View Details" button removed as the card itself is clickable -->
         </div>
@@ -320,6 +331,7 @@ import {
   Trash2,
   Calendar,
   ChevronRight,
+  ChevronDown,
   // MessageCircle, // Not used directly in template after changes
   // Briefcase, // Not used
 } from 'lucide-vue-next';
@@ -327,6 +339,7 @@ import JobImageCarousel from '@/components/jobs/JobImageCarousel.vue';
 import BulkMessageModal from './BulkMessageModal.vue';
 import JobLocationDisplay from '@/components/shared/JobLocationDisplay.vue';
 import StatusPill from '@/components/shared/StatusPill.vue';
+import CompactApplicantCard from './CompactApplicantCard.vue';
 import { formatStandardDate, formatStandardDateTime } from '@/lib/timeUtils';
 // Card import is no longer needed as BaseJobCard uses it internally
 // import { Card } from '@/components/ui/card';
@@ -355,9 +368,12 @@ const emit = defineEmits([
   'view-applications',
   'mark-completed',
   'delete-job',
+  'view-applicant-details',
+  'select-contractor',
 ]);
 
 const showBulkMessage = ref(false);
+const showApplications = ref(false);
 
 // Computed properties
 const applicationStats = computed(() => {
@@ -384,6 +400,10 @@ const applicationStats = computed(() => {
 const handleMessageSent = () => {
   showBulkMessage.value = false;
   // Could emit an event to refresh data or show success message
+};
+
+const toggleApplicationsView = () => {
+  showApplications.value = !showApplications.value;
 };
 
 // Method to get translated status labels

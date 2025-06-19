@@ -204,7 +204,7 @@
             Cancel
           </Button>
           <Button @click="saveSelections" type="button">
-            Save Selections
+            {{ $t('common.save') }} Selections
           </Button>
         </DialogFooter>
       </DialogContent>

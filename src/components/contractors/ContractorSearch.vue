@@ -5,7 +5,7 @@
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Search contractors by name, skill, or location..."
+        :placeholder="$t('contractors.searchPlaceholder')"
         class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         @input="handleInput"
         @focus="showSuggestions = true"

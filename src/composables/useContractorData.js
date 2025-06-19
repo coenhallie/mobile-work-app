@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { formatDisplayName } from '@/lib/nameFormatter';
 import { favoriteContractorIds } from '@/composables/useFavoriteContractors';
@@ -51,12 +51,28 @@ export function useContractorData() {
       const favIdsArray =
         favIds instanceof Set ? Array.from(favIds) : Array.from(favIds || []);
 
+      console.log('🔍 [DEBUG] Favorites filter applied:', {
+        showFavoritesOnly: filters.showFavoritesOnly,
+        userId: userId.value,
+        favoriteContractorIds: favoriteContractorIds.value,
+        favIds,
+        favIdsArray,
+        favIdsArrayLength: favIdsArray.length,
+      });
+
       if (favIdsArray.length > 0) {
         query = query.in('id', favIdsArray);
+        console.log(
+          '🔍 [DEBUG] Applied favorites filter with IDs:',
+          favIdsArray
+        );
       } else {
         // If show favorites is on but there are no favorites, return no results
         // by creating a condition that's always false (e.g., matching a non-existent UUID).
         query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+        console.log(
+          '🔍 [DEBUG] No favorite IDs found, returning empty result set'
+        );
       }
     }
 
@@ -153,7 +169,20 @@ export function useContractorData() {
 
   // Load contractors with filters
   const loadContractors = async (filters = {}) => {
+    // Prevent concurrent loading
+    if (isLoading.value) {
+      console.log(
+        '🔍 [DEBUG] useContractorData: Already loading, skipping duplicate request'
+      );
+      return;
+    }
+
     try {
+      console.log(
+        '🔍 [DEBUG] useContractorData: loadContractors called with filters:',
+        filters
+      );
+      console.log('🔍 [DEBUG] useContractorData: Setting isLoading to TRUE');
       isLoading.value = true;
       currentPage.value = 0;
 
@@ -161,11 +190,15 @@ export function useContractorData() {
       const cacheKey = JSON.stringify({ filters, page: 0, pageSize });
       const cached = cache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < cacheTimeout) {
+        console.log('useContractorData: Using cached data');
         contractors.value = cached.data.contractors;
         totalCount.value = cached.data.totalCount;
         hasMore.value = cached.data.hasMore;
+        isLoading.value = false;
         return cached.data;
       }
+
+      console.log('useContractorData: Fetching fresh data from Supabase');
 
       let query = supabase
         .from('contractor_profiles')
@@ -186,25 +219,17 @@ export function useContractorData() {
           working_hours,
           busy_until,
           auto_availability
-        `
+        `,
+          { count: 'exact' }
         )
         .eq('role', 'contractor')
         .range(0, pageSize - 1);
 
       query = applyFilters(query, filters);
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) throw error;
-
-      // Get total count
-      let countQuery = supabase
-        .from('contractor_profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('role', 'contractor');
-
-      countQuery = applyFilters(countQuery, filters);
-      const { count } = await countQuery;
 
       const transformedData = transformContractorData(data || []);
 
@@ -220,20 +245,41 @@ export function useContractorData() {
         timestamp: Date.now(),
       });
 
-      contractors.value = result.contractors;
-      totalCount.value = result.totalCount;
-      hasMore.value = result.hasMore;
-      currentPage.value = 1;
+      // Batch state updates
+      await nextTick(() => {
+        console.log(
+          '🔍 [DEBUG] useContractorData: Updating state with result:',
+          {
+            contractors: result.contractors.length,
+            totalCount: result.totalCount,
+            hasMore: result.hasMore,
+          }
+        );
+        contractors.value = result.contractors;
+        totalCount.value = result.totalCount;
+        hasMore.value = result.hasMore;
+        currentPage.value = 1;
+        console.log('🔍 [DEBUG] useContractorData: State updated successfully');
+      });
 
       return result;
     } catch (error) {
-      console.error('Error loading contractors:', error);
-      contractors.value = [];
-      totalCount.value = 0;
-      hasMore.value = false;
+      console.error(
+        '🔍 [DEBUG] useContractorData: Error loading contractors:',
+        error
+      );
+      await nextTick(() => {
+        contractors.value = [];
+        totalCount.value = 0;
+        hasMore.value = false;
+      });
       throw error;
     } finally {
-      isLoading.value = false;
+      await nextTick(() => {
+        console.log('🔍 [DEBUG] useContractorData: Setting isLoading to FALSE');
+        isLoading.value = false;
+        console.log('🔍 [DEBUG] useContractorData: loadContractors completed');
+      });
     }
   };
 
@@ -303,17 +349,23 @@ export function useContractorData() {
         timestamp: Date.now(),
       });
 
-      contractors.value.push(...result.contractors);
-      hasMore.value = result.hasMore;
-      currentPage.value++;
+      await nextTick(() => {
+        contractors.value.push(...result.contractors);
+        hasMore.value = result.hasMore;
+        currentPage.value++;
+      });
 
       return result;
     } catch (error) {
       console.error('Error loading more contractors:', error);
-      hasMore.value = false;
+      await nextTick(() => {
+        hasMore.value = false;
+      });
       throw error;
     } finally {
-      isLoading.value = false;
+      await nextTick(() => {
+        isLoading.value = false;
+      });
     }
   };
 

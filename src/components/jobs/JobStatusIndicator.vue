@@ -56,16 +56,16 @@ const props = defineProps({
 // Map status codes to human-readable labels
 const statusLabel = computed(() => {
   const labels = {
-    [JOB_STATUS.OPEN]: t('jobs.status.open'),
-    [JOB_STATUS.ASSIGNED]: t('jobs.status.assigned'),
-    [JOB_STATUS.IN_PROGRESS]: t('jobs.inProgress'),
-    [JOB_STATUS.COMPLETED]: t('jobs.completed'),
-    [JOB_STATUS.IN_REVIEW]: t('jobs.status.inReview'),
-    [JOB_STATUS.FINALIZED]: t('jobs.status.finalized'),
-    [JOB_STATUS.CANCELLED]: t('jobs.cancelled'),
-    pending_assignment: t('jobs.status.assigned'), // Handle legacy status
+    [JOB_STATUS.OPEN]: t('jobStatus.open'),
+    [JOB_STATUS.ASSIGNED]: t('jobStatus.assigned'),
+    [JOB_STATUS.IN_PROGRESS]: t('jobStatus.inProgress'),
+    [JOB_STATUS.COMPLETED]: t('jobStatus.completed'),
+    [JOB_STATUS.IN_REVIEW]: t('jobStatus.inReview'),
+    [JOB_STATUS.FINALIZED]: t('jobStatus.finalized'),
+    [JOB_STATUS.CANCELLED]: t('jobStatus.cancelled'),
+    pending_assignment: t('jobStatus.assigned'), // Handle legacy status
   };
-  return labels[props.status] || t('common.unknown');
+  return labels[props.status] || t('jobStatus.unknown');
 });
 
 // Map status codes to background colors for the indicator dot

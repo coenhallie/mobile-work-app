@@ -3,7 +3,7 @@
     class="contractor-availability-settings bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
   >
     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-      Availability Settings
+      {{ $t('components.availabilitySettings') }}
     </h3>
 
     <!-- Current Status -->

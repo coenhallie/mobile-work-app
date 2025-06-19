@@ -9,8 +9,9 @@ import esPE from './locales/es-PE.json';
 const messages = {
   'en-US': enUS,
   'es-PE': esPE,
-  // Add alias for 'es' to point to 'es-PE' for better compatibility
+  // Add aliases for better compatibility
   es: esPE,
+  en: enUS,
 };
 
 // Get initial locale

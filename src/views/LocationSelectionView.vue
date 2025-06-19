@@ -238,7 +238,7 @@
           :disabled="!hasSelections"
           class="flex-1 font-semibold py-4 rounded-xl transition-all duration-200"
         >
-          Done
+          {{ $t('locationSelection.doneButton') }}
         </Button>
       </div>
     </div>

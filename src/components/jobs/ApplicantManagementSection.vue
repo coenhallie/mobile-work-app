@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h2 class="text-2xl font-bold text-foreground">
-          Job Applicants
+          {{ $t('components.jobApplicants') }}
           <span
             v-if="applicantCount > 0"
             class="text-lg font-normal text-muted-foreground"

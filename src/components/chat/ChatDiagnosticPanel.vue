@@ -86,7 +86,7 @@
           </h4>
           <div class="space-y-1 text-xs">
             <div class="flex justify-between">
-              <span>Total Issues:</span>
+              <span>{{ $t('chat.totalIssuesLabel') }}</span>
               <span
                 :class="
                   reactivityDiagnostics.summary.totalIssues > 0
