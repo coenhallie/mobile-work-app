@@ -78,8 +78,8 @@ export function setStoredLocale(locale) {
  * @returns {string} Locale code
  */
 export function getInitialLocale() {
-  // Priority: stored locale > browser locale > default locale
-  return getStoredLocale() || getBrowserLocale() || DEFAULT_LOCALE;
+  // Priority: stored locale > default locale > browser locale
+  return getStoredLocale() || DEFAULT_LOCALE || getBrowserLocale();
 }
 
 /**

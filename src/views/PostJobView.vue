@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="w-full max-w-7xl mx-auto px-4 py-6 bg-white dark:bg-gray-900 min-h-screen"
-  >
+  <div class="w-full max-w-7xl mx-auto px-4 py-6 min-h-screen">
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-normal text-gray-900 dark:text-white mb-2">
@@ -13,7 +11,7 @@
     </div>
 
     <div
-      class="max-w-lg mx-auto bg-gray-50 dark:bg-gray-800 rounded-lg p-6 shadow"
+      class="bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg max-w-lg mx-auto p-6"
     >
       <form @submit.prevent="submitForm">
         <div class="grid gap-2 mb-4">

@@ -4,17 +4,17 @@
     <button
       type="button"
       @click="openCalendar"
-      class="w-full flex items-center justify-between px-4 py-3 bg-card border-2 border-muted-foreground/25 rounded-xl hover:bg-muted/30 focus:bg-background focus:border-primary/50 transition-all duration-200 text-left"
+      class="w-full flex items-center justify-between px-3 py-2 border border-border rounded-md hover:bg-muted/50 focus:border-primary transition-all duration-200 text-left"
       :class="{
         'text-muted-foreground': !selectedDateTime,
         'text-foreground': selectedDateTime,
       }"
     >
       <div class="flex items-center gap-3">
-        <div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+        <div class="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-md">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-orange-600 dark:text-orange-400"
+            class="h-4 w-4 text-orange-600 dark:text-orange-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -28,12 +28,7 @@
           </svg>
         </div>
         <div>
-          <div
-            class="font-medium text-sm text-muted-foreground uppercase tracking-wide"
-          >
-            DATE
-          </div>
-          <div class="text-base">
+          <div class="text-sm">
             {{
               selectedDateTime
                 ? formatDisplayDate(selectedDateTime)

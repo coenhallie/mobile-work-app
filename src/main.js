@@ -34,8 +34,8 @@ const loadApp = async () => {
     const app = createApp(App);
 
     // Initialize theme system early by importing its parts
-    // currentTheme will be directly available from the imported module
-    const { currentTheme } = await import('./composables/useTheme');
+    // Initialize theme system early
+    await import('./composables/useTheme');
 
     // Initialize Supabase auth
 

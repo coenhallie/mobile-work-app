@@ -1,14 +1,8 @@
 <script setup>
 import { computed } from 'vue';
-import {
-  isDark,
-  currentTheme,
-  isSystemPreference,
-  cycleTheme,
-  getThemeDisplayName,
-} from '@/composables/useTheme';
+import { useTheme } from '@/composables/useTheme';
 import { Button } from '@/components/ui/button';
-import { Sun, Moon, Monitor } from 'lucide-vue-next';
+import { Sun, Moon, Monitor, Palette } from 'lucide-vue-next';
 
 const props = defineProps({
   variant: {
@@ -25,43 +19,28 @@ const props = defineProps({
   },
 });
 
-// Theme variables are now directly imported
-// isDark, currentTheme, isSystemPreference, cycleTheme, getThemeDisplayName are already available
+const { isDark, theme, cycleTheme, getThemeDisplayName, getNextTheme } =
+  useTheme();
 
-// Get the appropriate icon based on current theme state
 const currentIcon = computed(() => {
-  if (isSystemPreference.value) {
-    return Monitor;
+  switch (theme.value) {
+    case 'light':
+      return Sun;
+    case 'dark':
+      return Moon;
+    case 'system':
+      return Monitor;
+    default:
+      return Sun;
   }
-  return isDark.value ? Moon : Sun;
 });
 
-// Get the display text for the current theme
-const themeLabel = computed(() => {
-  if (isSystemPreference.value) {
-    return 'System';
-  }
-  return getThemeDisplayName(currentTheme.value);
-});
+const themeLabel = computed(() => getThemeDisplayName(theme.value));
 
-// Get tooltip text showing what will happen on next click
 const tooltipText = computed(() => {
-  const current = isSystemPreference.value
-    ? 'System'
-    : getThemeDisplayName(currentTheme.value);
-  const next = getNextThemeLabel();
-  return `Current: ${current}. Click to switch to ${next}.`;
+  const nextThemeName = getThemeDisplayName(getNextTheme());
+  return `Switch to ${nextThemeName}`;
 });
-
-const getNextThemeLabel = () => {
-  if (isSystemPreference.value) {
-    return 'Light';
-  } else if (currentTheme.value === 'light') {
-    return 'Dark';
-  } else {
-    return 'System';
-  }
-};
 
 const handleToggle = () => {
   cycleTheme();
@@ -88,8 +67,8 @@ const handleToggle = () => {
         'size-4': size === 'sm' || size === 'icon',
         'size-5': size === 'default',
         'size-6': size === 'lg',
-        'rotate-180': isDark && !isSystemPreference,
-        'scale-110': isSystemPreference,
+        'rotate-180': isDark,
+        'scale-110': theme === 'system',
       }"
     />
 

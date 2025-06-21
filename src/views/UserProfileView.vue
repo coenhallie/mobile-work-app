@@ -1,14 +1,12 @@
 <template>
-  <div
-    class="w-full max-w-7xl mx-auto px-4 py-6 bg-white dark:bg-gray-900 min-h-screen"
-  >
+  <div class="w-full max-w-7xl mx-auto px-4 py-6 bg-background min-h-screen">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl font-normal text-gray-900 dark:text-white mb-2">
+      <h1 class="text-2xl font-normal text-foreground mb-2">
         {{ $t('profile.title') }}
       </h1>
-      <p class="text-gray-600 dark:text-gray-400 text-sm">
-        Manage your account settings and preferences
+      <p class="text-muted-foreground text-sm">
+        {{ $t('profile.subtitle') }}
       </p>
     </div>
 
@@ -26,7 +24,7 @@
 
       <!-- Notification Preferences Section -->
       <div
-        class="w-full max-w-md mt-8 p-4 rounded-lg shadow bg-gray-50 dark:bg-gray-800"
+        class="w-full max-w-md mt-8 p-4 rounded-lg bg-transparent border border-border"
       >
         <h2 class="text-xl font-normal mb-4 text-foreground">
           {{ $t('profile.notificationPreferences') }}
@@ -58,7 +56,7 @@
               type="time"
               id="quietHoursStart"
               v-model="preferences.quiet_hours_start"
-              class="mt-1 block w-full"
+              class="mt-1 block w-full border-border"
               :disabled="!preferences.enable_new_job_notifications"
             />
           </div>
@@ -73,7 +71,7 @@
               type="time"
               id="quietHoursEnd"
               v-model="preferences.quiet_hours_end"
-              class="mt-1 block w-full"
+              class="mt-1 block w-full border-border"
               :disabled="!preferences.enable_new_job_notifications"
             />
           </div>
@@ -150,7 +148,7 @@
 
       <!-- Location Settings Section -->
       <div
-        class="w-full max-w-md mt-8 p-4 rounded-lg shadow bg-gray-50 dark:bg-gray-800"
+        class="w-full max-w-md mt-8 p-4 rounded-lg bg-transparent border border-border"
       >
         <h2 class="text-xl font-normal mb-4 text-foreground">
           {{ $t('profile.locationSettings') }}
@@ -246,7 +244,7 @@
 
       <!-- Language Settings -->
       <div
-        class="w-full max-w-md mt-8 p-4 rounded-lg shadow bg-gray-50 dark:bg-gray-800"
+        class="w-full max-w-md mt-8 p-4 rounded-lg bg-transparent border border-border"
       >
         <h2 class="text-xl font-normal mb-4 text-foreground">
           {{ $t('profile.language') }}
@@ -266,7 +264,7 @@
 
       <!-- Payment History Section -->
       <div
-        class="w-full max-w-md mt-8 p-4 rounded-lg shadow bg-gray-50 dark:bg-gray-800"
+        class="w-full max-w-md mt-8 p-4 rounded-lg bg-transparent border border-border"
       >
         <h2 class="text-xl font-normal mb-4 text-foreground">
           {{ $t('payment.paymentHistory') }}
@@ -497,8 +495,9 @@ const fetchPreferences = async () => {
   } catch (err) {
     if (isMounted.value) {
       console.error('Error fetching preferences:', err);
-      errorMessage.value =
-        'Failed to load preferences. ' + (err.message || JSON.stringify(err));
+      errorMessage.value = t('profile.loadPreferencesError', {
+        error: err.message || t('profile.unknownError'),
+      });
     }
   } finally {
     if (isMounted.value) {
@@ -514,13 +513,13 @@ const savePreferences = async () => {
   }
 
   if (!userId.value) {
-    errorMessage.value = 'User not authenticated.';
+    errorMessage.value = t('profile.userNotAuthenticated');
     console.log('savePreferences: No user ID available');
     return;
   }
 
   if (!supabase) {
-    errorMessage.value = 'Database connection not initialized.';
+    errorMessage.value = t('profile.dbConnectionError');
     console.log('savePreferences: Supabase client not initialized');
     return;
   }
@@ -571,7 +570,7 @@ const savePreferences = async () => {
     }
 
     console.log('Preferences saved successfully:', data);
-    successMessage.value = 'Preferences saved successfully!';
+    successMessage.value = t('profile.savePreferencesSuccess');
   } catch (err) {
     // Check if component is still mounted before updating error state
     if (!isMounted.value) {
@@ -580,8 +579,9 @@ const savePreferences = async () => {
     }
 
     console.error('Error saving preferences:', err);
-    errorMessage.value =
-      'Failed to save preferences. ' + (err.message || JSON.stringify(err));
+    errorMessage.value = t('profile.savePreferencesError', {
+      error: err.message || t('profile.unknownError'),
+    });
 
     // Try direct table access as a fallback
     try {
@@ -597,7 +597,7 @@ const savePreferences = async () => {
         console.error('Fallback error:', error);
       } else {
         console.log('Fallback success');
-        successMessage.value = 'Preferences saved successfully!';
+        successMessage.value = t('profile.savePreferencesSuccess');
       }
     } catch (fallbackErr) {
       if (isMounted.value) {
@@ -736,11 +736,10 @@ const handleRequestPermission = async () => {
     }
 
     if (granted) {
-      notificationTestMessage.value = 'Notification permission granted!';
+      notificationTestMessage.value = t('profile.permissionGrantedSuccess');
       notificationTestSuccess.value = true;
     } else {
-      notificationTestMessage.value =
-        'Could not get notification permission. This may be due to system settings or permissions.';
+      notificationTestMessage.value = t('profile.permissionDeniedError');
       notificationTestSuccess.value = false;
     }
   } catch (error) {
@@ -751,7 +750,9 @@ const handleRequestPermission = async () => {
     }
 
     console.error('Error requesting permission:', error);
-    notificationTestMessage.value = `Error requesting permission: ${error.message || 'Unknown error'}`;
+    notificationTestMessage.value = t('profile.permissionRequestError', {
+      error: error.message || t('profile.unknownError'),
+    });
     notificationTestSuccess.value = false;
   } finally {
     if (isMounted.value) {
@@ -781,15 +782,14 @@ const handleTestNotification = async () => {
   try {
     // Check if notifications are supported
     if (!isSupported.value) {
-      throw new Error('Notifications are not supported in this environment');
+      throw new Error(t('profile.notificationsNotSupported'));
     }
 
     if (!permissionGranted.value) {
       console.log('Notification permission not granted');
 
       if (isMounted.value) {
-        notificationTestMessage.value =
-          'Notification permission not granted. Please enable notifications for this app.';
+        notificationTestMessage.value = t('profile.permissionNotGrantedError');
       }
       return;
     }
@@ -882,7 +882,9 @@ const loadPaymentHistory = async () => {
     paymentHistory.value = history;
   } catch (error) {
     console.error('Error loading payment history:', error);
-    paymentHistoryError.value = error.message;
+    paymentHistoryError.value = t('payment.historyError', {
+      error: error.message,
+    });
   } finally {
     isLoadingPayments.value = false;
   }
@@ -891,13 +893,13 @@ const loadPaymentHistory = async () => {
 const handleRefundRequest = (payment) => {
   console.log('Refund requested for payment:', payment);
   // TODO: Implement refund request functionality
-  alert('Refund request functionality will be implemented soon.');
+  alert(t('payment.refundNotImplemented'));
 };
 
 const handleViewReceipt = (payment) => {
   console.log('View receipt for payment:', payment);
   // TODO: Implement receipt viewing functionality
-  alert('Receipt viewing functionality will be implemented soon.');
+  alert(t('payment.receiptNotImplemented'));
 };
 
 // Flag to track if component is mounted

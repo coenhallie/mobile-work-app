@@ -230,7 +230,7 @@
                     <div
                       class="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-75"
                     ></div>
-                    {{ $t(`jobs.status.${jobStore.currentJob.status}`) }}
+                    {{ $t(`jobStatus.${jobStore.currentJob.status}`) }}
                   </span>
 
                   <!-- Payment Status Indicator -->

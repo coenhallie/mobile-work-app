@@ -22,13 +22,16 @@
           class="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
           :placeholder="t('jobs.applicationPlaceholder')"
         ></textarea>
+        <div class="text-xs text-muted-foreground text-right mt-1">
+          {{ message.length }} / {{ minMessageLength }}
+        </div>
       </div>
 
       <div class="flex justify-end">
         <button
           type="submit"
           class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || !isMessageValid"
         >
           <span v-if="isSubmitting" class="flex items-center">
             <svg
@@ -61,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useJobApplicationsStore } from '../../stores/jobApplications';
 import { useAuth } from '../../composables/useAuth';
 import { useHaptics } from '../../composables/useHaptics';
@@ -87,10 +90,21 @@ const { triggerSuccess, triggerError } = useHaptics();
 const message = ref('');
 const isSubmitting = ref(false);
 const error = ref('');
+const minMessageLength = 50;
+
+const isMessageValid = computed(() => {
+  return message.value.length >= minMessageLength;
+});
 
 async function submitApplication() {
   if (!userId.value) {
     error.value = 'You must be logged in to apply for jobs.';
+    emit('error', error.value);
+    return;
+  }
+
+  if (!isMessageValid.value) {
+    error.value = `Please provide a message of at least ${minMessageLength} characters.`;
     emit('error', error.value);
     return;
   }

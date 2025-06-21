@@ -5,16 +5,16 @@
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-normal text-gray-900 dark:text-white mb-2">
-        Contractor Profile
+        {{ $t('contractorProfile.title') }}
       </h1>
       <p class="text-gray-600 dark:text-gray-400 text-sm">
-        View contractor details and availability
+        {{ $t('contractorProfile.subtitle') }}
       </p>
     </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="text-center text-muted-foreground py-10">
-      Loading contractor details...
+      {{ $t('contractorProfile.loading') }}
     </div>
 
     <!-- Error State -->
@@ -22,7 +22,7 @@
       v-else-if="error"
       class="text-center text-red-500 dark:text-red-400 py-10"
     >
-      Error: {{ error }}
+      {{ $t('contractorProfile.error', { error }) }}
     </div>
 
     <!-- Profile Display -->
@@ -43,7 +43,11 @@
           <img
             v-else-if="profileImageUrl"
             :src="profileImageUrl"
-            :alt="`${contractor.full_name}'s profile photo`"
+            :alt="
+              $t('contractorProfile.profilePhotoAlt', {
+                name: contractor.full_name,
+              })
+            "
             class="h-full w-full object-cover"
             @error="handleImageError"
           />
@@ -56,12 +60,14 @@
           </h2>
           <!-- Skills -->
           <div class="mb-3">
-            <span class="text-sm font-medium text-foreground">Skills:</span>
+            <span class="text-sm font-medium text-foreground">{{
+              $t('contractorProfile.skills')
+            }}</span>
             <p class="text-muted-foreground text-sm">
               {{
                 contractor.skills && contractor.skills.length > 0
                   ? contractor.skills.map(formatSkill).join(', ')
-                  : 'No skills listed'
+                  : $t('contractorProfile.noSkills')
               }}
             </p>
           </div>
@@ -83,7 +89,9 @@
               }}</span>
             </div>
             <div v-else class="flex items-center text-muted-foreground">
-              <span class="text-sm">💬 Usually responds quickly</span>
+              <span class="text-sm">{{
+                $t('contractorProfile.usuallyRespondsQuickly')
+              }}</span>
             </div>
           </div>
         </div>
@@ -91,7 +99,9 @@
 
       <!-- Bio Section -->
       <div v-if="contractor.bio" class="mb-6">
-        <h3 class="text-lg font-medium text-foreground mb-3">About</h3>
+        <h3 class="text-lg font-medium text-foreground mb-3">
+          {{ $t('contractorProfile.about') }}
+        </h3>
         <p class="text-foreground leading-relaxed">
           {{ contractor.bio }}
         </p>
@@ -105,7 +115,11 @@
         <div v-if="contractor.years_experience" class="flex items-center">
           <span class="text-blue-500 mr-2">📅</span>
           <span class="text-sm text-muted-foreground">
-            {{ contractor.years_experience }} years of experience
+            {{
+              $t('contractorProfile.experience', {
+                years: contractor.years_experience,
+              })
+            }}
           </span>
         </div>
         <div v-if="contractor.district" class="flex items-center">
@@ -145,7 +159,9 @@
                 clip-rule="evenodd"
               />
             </svg>
-            <span class="text-sm font-medium">Chat opened successfully!</span>
+            <span class="text-sm font-medium">{{
+              $t('contractorProfile.chatSuccess')
+            }}</span>
           </div>
         </div>
 
@@ -155,7 +171,11 @@
           :disabled="isContactLoading"
           class="w-full font-semibold py-4 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/20 transition-all duration-200 transform active:scale-[0.98] min-h-[56px]"
           size="lg"
-          :aria-label="`Contact ${contractor.full_name} - Start a conversation`"
+          :aria-label="
+            $t('contractorProfile.contactAriaLabel', {
+              name: formatDisplayName(contractor.full_name),
+            })
+          "
         >
           <div class="flex items-center justify-center">
             <!-- Loading State -->
@@ -180,11 +200,15 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Opening Chat...
+              {{ $t('contractorProfile.openingChat') }}
             </template>
             <!-- Default State -->
             <template v-else>
-              Contact {{ formatDisplayName(contractor.full_name) }}
+              {{
+                $t('contractorProfile.contact', {
+                  name: formatDisplayName(contractor.full_name),
+                })
+              }}
             </template>
           </div>
         </Button>
@@ -192,7 +216,7 @@
         <!-- Contact Encouragement Text -->
         <div class="mt-2 text-center">
           <p class="text-xs text-muted-foreground">
-            💬 Free to contact • No commitment required
+            {{ $t('contractorProfile.contactEncouragement') }}
           </p>
         </div>
       </div>
@@ -299,7 +323,7 @@ onMounted(async () => {
 const formatSkill = (skill) => {
   return skill
     ? skill.charAt(0).toUpperCase() + skill.slice(1)
-    : 'Not specified';
+    : t('common.notSpecified');
 };
 
 // Function to contact the contractor
@@ -410,7 +434,7 @@ const availabilityTextClass = computed(() => {
 });
 
 const availabilityText = computed(() => {
-  if (!contractor.value) return 'Status unknown';
+  if (!contractor.value) return t('contractorProfile.statusUnknown');
 
   const status = contractor.value.availability_status || 'available';
   const isCurrentlyAvailable = isContractorCurrentlyAvailable(contractor.value);
@@ -426,16 +450,16 @@ const availabilityText = computed(() => {
       const now = new Date();
       if (busyDate > now) {
         const diffHours = Math.ceil((busyDate - now) / (1000 * 60 * 60));
-        return `Busy for ${diffHours}h`;
+        return t('contractorProfile.busyFor', { hours: diffHours });
       }
     }
-    return 'Currently busy';
+    return t('contractorProfile.currentlyBusy');
   } else if (status === 'offline') {
-    return 'Offline';
+    return t('contractorProfile.offline');
   } else if (status === 'away') {
-    return 'Away';
+    return t('contractorProfile.away');
   } else {
-    return 'Status unknown';
+    return t('contractorProfile.statusUnknown');
   }
 });
 

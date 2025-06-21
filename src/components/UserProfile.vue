@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full max-w-md mx-auto bg-gray-50 dark:bg-gray-800 rounded-lg p-6 shadow"
+    class="w-full max-w-md mx-auto bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg p-6"
   >
     <!-- Profile Header -->
     <div class="flex flex-col items-center mb-6">
@@ -118,7 +118,7 @@
             id="displayName"
             v-model="editableDisplayName"
             :placeholder="$t('profile.displayNamePlaceholder')"
-            class="w-full"
+            class="w-full border-border"
           />
         </div>
 
@@ -132,7 +132,7 @@
             v-model="editableBio"
             :placeholder="$t('profile.bioPlaceholderProfile')"
             rows="3"
-            class="w-full px-3 py-2 rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+            class="w-full px-3 py-2 rounded-md bg-background text-foreground border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
           ></textarea>
         </div>
 
@@ -146,7 +146,7 @@
             v-model="editablePhone"
             :placeholder="$t('profile.phoneNumberPlaceholder')"
             type="tel"
-            class="w-full"
+            class="w-full border-border"
           />
         </div>
 

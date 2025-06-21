@@ -843,6 +843,7 @@ export const useJobApplicationsStore = defineStore('jobApplications', () => {
             id: contractorProfile?.id,
             userId: app.contractor_user_id,
             fullName: contractorProfile?.full_name || 'Unnamed Contractor',
+            location: contractorProfile.service_areas?.[0] || null,
             name: contractorProfile?.full_name || 'Unnamed Contractor', // Add name field for consistency
             profileImageUrl: processedAvatarUrl, // Use profileImageUrl like ContractorCard
             rating: null, // contractor_profiles doesn't seem to have rating field

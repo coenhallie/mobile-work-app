@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useSupabaseAuth } from '@/composables/useSupabaseAuth';
 import { useBiometricAuth } from '@/composables/useBiometricAuth'; // Added
 import { useStatusBar } from '@/composables/useStatusBar';
-import { isDark, currentTheme } from '@/composables/useTheme';
+import { useTheme } from '@/composables/useTheme';
 import HomeView from '@/views/HomeView.vue';
 import MobileBottomNavigation from '@/components/navigation/MobileBottomNavigation.vue';
 import BiometricModal from '@/components/auth/BiometricModal.vue'; // Added
@@ -65,8 +65,8 @@ const {
 const showBiometricLoginPrompt = ref(false); // Added
 const isInitialAuthCheckDone = ref(false); // Added
 
-// Theme variables are now directly imported
-// isDark and currentTheme are already available from the import
+// Theme variables are now available from useTheme()
+const { isDark } = useTheme();
 
 // Initialize status bar composable
 const statusBar = useStatusBar();

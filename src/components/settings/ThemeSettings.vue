@@ -1,13 +1,15 @@
 <template>
-  <div class="w-full p-4 border rounded-lg shadow bg-gray-50 dark:bg-gray-800">
-    <h2 class="text-xl font-semibold mb-4 text-center text-foreground">
+  <div
+    class="w-full p-4 rounded-lg bg-transparent border border-gray-100 dark:border-gray-800"
+  >
+    <h2 class="text-xl font-normal mb-4 text-foreground">
       {{ $t('theme.themeSettings') }}
     </h2>
 
     <div class="space-y-4">
       <!-- Theme Options -->
       <div class="space-y-3">
-        <h3 class="text-sm font-medium text-foreground mb-2">
+        <h3 class="text-sm font-medium text-muted-foreground mb-2">
           {{ $t('theme.chooseTheme') }}
         </h3>
 
@@ -16,9 +18,8 @@
           @click="() => setTheme('light')"
           class="flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all hover:bg-accent hover:border-accent-foreground/20"
           :class="{
-            'border-primary bg-primary/5':
-              currentTheme === 'light' && !isSystemPreference,
-            'border-border': !(currentTheme === 'light' && !isSystemPreference),
+            'border-primary bg-primary/5': theme === 'light',
+            'border-border': theme !== 'light',
           }"
         >
           <div class="flex items-center gap-3">
@@ -31,7 +32,7 @@
             </div>
           </div>
           <div
-            v-if="currentTheme === 'light' && !isSystemPreference"
+            v-if="theme === 'light'"
             class="size-2 bg-primary rounded-full"
           ></div>
         </div>
@@ -41,9 +42,8 @@
           @click="() => setTheme('dark')"
           class="flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all hover:bg-accent hover:border-accent-foreground/20"
           :class="{
-            'border-primary bg-primary/5':
-              currentTheme === 'dark' && !isSystemPreference,
-            'border-border': !(currentTheme === 'dark' && !isSystemPreference),
+            'border-primary bg-primary/5': theme === 'dark',
+            'border-border': theme !== 'dark',
           }"
         >
           <div class="flex items-center gap-3">
@@ -56,7 +56,7 @@
             </div>
           </div>
           <div
-            v-if="currentTheme === 'dark' && !isSystemPreference"
+            v-if="theme === 'dark'"
             class="size-2 bg-primary rounded-full"
           ></div>
         </div>
@@ -66,8 +66,8 @@
           @click="() => setTheme('system')"
           class="flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all hover:bg-accent hover:border-accent-foreground/20"
           :class="{
-            'border-primary bg-primary/5': isSystemPreference,
-            'border-border': !isSystemPreference,
+            'border-primary bg-primary/5': theme === 'system',
+            'border-border': theme !== 'system',
           }"
         >
           <div class="flex items-center gap-3">
@@ -88,7 +88,7 @@
             </div>
           </div>
           <div
-            v-if="isSystemPreference"
+            v-if="theme === 'system'"
             class="size-2 bg-primary rounded-full"
           ></div>
         </div>
@@ -98,40 +98,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  isDark,
-  currentTheme,
-  isSystemPreference,
-  preferredDark,
-  setTheme,
-  getThemeDisplayName,
-} from '@/composables/useTheme';
-import { Sun, Moon, Smartphone } from 'lucide-vue-next';
+import { useTheme } from '@/composables/useTheme';
+import { Sun, Moon, Smartphone, Palette } from 'lucide-vue-next';
+import { usePreferredDark } from '@vueuse/core';
 
 const { t } = useI18n();
-
-// Theme variables are now directly imported
-// isDark, currentTheme, isSystemPreference, preferredDark, setTheme, getThemeDisplayName are already available
-
-// Get the appropriate icon based on current theme state
-const currentIcon = computed(() => {
-  if (isSystemPreference.value) {
-    return Smartphone;
-  }
-  return isDark.value ? Moon : Sun;
-});
-
-// Get the display label for current theme
-const currentThemeLabel = computed(() => {
-  if (isSystemPreference.value) {
-    return `System (${preferredDark.value ? 'Dark' : 'Light'})`;
-  }
-  return getThemeDisplayName(currentTheme.value);
-});
+const { theme, setTheme } = useTheme();
+const preferredDark = usePreferredDark();
 </script>
-
 <style scoped>
 /* Add smooth transitions for theme changes */
 .transition-all {

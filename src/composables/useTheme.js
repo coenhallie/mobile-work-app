@@ -1,109 +1,81 @@
-import { useDark, useToggle, usePreferredDark } from '@vueuse/core';
-import { computed, watch } from 'vue'; // Removed onMounted as it's not ideal for singleton
+import { ref, computed, watch } from 'vue';
+import { usePreferredDark, useStorage } from '@vueuse/core';
 
-// --- Start of singleton instantiation ---
+// --- Singleton state ---
 const preferredDark = usePreferredDark();
-const isDark = useDark({
-  selector: 'html',
-  attribute: 'class',
-  valueDark: 'dark',
-  valueLight: '',
-  storageKey: 'theme-preference',
+const theme = useStorage('theme', 'system'); // 'light', 'dark', 'system'
+
+const isDark = computed(() => {
+  if (theme.value === 'system') {
+    return preferredDark.value;
+  }
+  return theme.value === 'dark';
 });
 
-// Initialize with system preference if no stored preference exists
-const storedPreference = localStorage.getItem('theme-preference');
-if (storedPreference === null) {
-  isDark.value = preferredDark.value;
-}
+const updateHtmlClass = () => {
+  const htmlEl = document.documentElement;
+  htmlEl.classList.remove('dark');
+  if (isDark.value) {
+    htmlEl.classList.add('dark');
+  }
+};
 
-const toggleDark = useToggle(isDark);
+const setTheme = (newTheme) => {
+  theme.value = newTheme;
+};
 
-const currentTheme = computed(() => {
-  return isDark.value ? 'dark' : 'light';
-});
-
-const isSystemPreference = computed(() => {
-  const stored = localStorage.getItem('theme-preference');
-  return stored === null || stored === 'auto';
-});
+// --- Watchers ---
+watch(
+  isDark,
+  () => {
+    updateHtmlClass();
+  },
+  { immediate: true }
+);
 
 const updateMetaThemeColor = (isDarkValue) => {
   if (typeof document !== 'undefined') {
     const metaTag = document.getElementById('theme-color-meta');
     if (metaTag) {
-      metaTag.setAttribute('content', isDarkValue ? '#0A0A0A' : '#FFFFFF');
+      const color = isDarkValue ? '#111827' : '#ffffff';
+      metaTag.setAttribute('content', color);
     }
   }
 };
 
-const setTheme = (theme) => {
-  if (theme === 'system' || theme === 'auto') {
-    localStorage.removeItem('theme-preference');
-    isDark.value = preferredDark.value;
-  } else if (theme === 'dark') {
-    isDark.value = true;
-  } else if (theme === 'light') {
-    isDark.value = false;
-  }
+watch(isDark, updateMetaThemeColor, { immediate: true });
+
+// --- Computed properties and cycle logic ---
+const themes = ['light', 'dark', 'system'];
+
+const getNextTheme = () => {
+  const currentIndex = themes.indexOf(theme.value);
+  const nextIndex = (currentIndex + 1) % themes.length;
+  return themes[nextIndex];
 };
 
-// Watch for system preference changes when using auto mode
-watch(preferredDark, (newPreference) => {
-  if (isSystemPreference.value) {
-    isDark.value = newPreference;
-  }
-});
+const cycleTheme = () => {
+  const nextTheme = getNextTheme();
+  setTheme(nextTheme);
+};
 
-// Watch for theme changes and update meta tag
-// Set immediate to true to run on initialization
-watch(
-  isDark,
-  (newIsDark) => {
-    updateMetaThemeColor(newIsDark);
-  },
-  { immediate: true }
-);
-
-// Function to get theme display name
-const getThemeDisplayName = (themeVal = currentTheme.value) => {
-  // Renamed param to avoid conflict
+const getThemeDisplayName = (themeVal = theme.value) => {
   const names = {
     light: 'Light',
     dark: 'Dark',
     system: 'System',
-    auto: 'System',
   };
   return names[themeVal] || 'Unknown';
 };
 
-// Function to get next theme in cycle (light -> dark -> system)
-const getNextTheme = () => {
-  if (isSystemPreference.value) {
-    return 'light';
-  } else if (currentTheme.value === 'light') {
-    return 'dark';
-  } else {
-    return 'system';
-  }
-};
-
-// Enhanced toggle that cycles through light -> dark -> system
-const cycleTheme = () => {
-  const next = getNextTheme();
-  setTheme(next);
-};
-
-// Export the reactive properties and methods directly
-export {
-  isDark,
-  currentTheme,
-  isSystemPreference,
-  preferredDark,
-  toggleDark,
-  setTheme,
-  cycleTheme,
-  getThemeDisplayName,
-  getNextTheme,
-};
-// --- End of singleton instantiation ---
+// --- Export ---
+export function useTheme() {
+  return {
+    isDark,
+    theme,
+    setTheme,
+    cycleTheme,
+    getThemeDisplayName,
+    getNextTheme,
+  };
+}

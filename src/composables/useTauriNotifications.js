@@ -1,4 +1,5 @@
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { tauriNotificationService } from '@/services/tauriNotificationService';
 import { useAuth } from '@/composables/useAuth';
 
@@ -10,6 +11,7 @@ import { useAuth } from '@/composables/useAuth';
  * and handling platform-specific behavior.
  */
 export function useTauriNotifications() {
+  const { t } = useI18n();
   const { userId, getSupabaseClient } = useAuth();
   const supabase = getSupabaseClient();
 
@@ -165,11 +167,11 @@ export function useTauriNotifications() {
   const permissionStatusText = computed(() => {
     switch (permissionState.value) {
       case 'granted':
-        return 'Notifications are enabled';
+        return t('notifications.enabled');
       case 'denied':
-        return 'Notifications are blocked';
+        return t('notifications.blocked');
       default:
-        return 'Notification permission not requested';
+        return t('notifications.notRequested');
     }
   });
 

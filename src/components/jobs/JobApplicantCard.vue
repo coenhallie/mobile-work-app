@@ -1,242 +1,168 @@
 <template>
-  <div class="job-applicant-card" :class="{ unread: !applicant.read }">
-    <div class="flex items-start gap-4">
-      <!-- Applicant Avatar -->
-      <div class="flex-shrink-0">
+  <article
+    class="border border-border/50 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-border"
+    @click="viewContractorProfile(applicant.contractor_id)"
+    role="button"
+    :aria-label="`View ${applicant.contractor_profiles?.full_name}'s application`"
+    tabindex="0"
+  >
+    <!-- Header Section -->
+    <div class="flex items-start space-x-4 p-4">
+      <!-- Profile Image -->
+      <div class="relative flex-shrink-0">
         <img
           v-if="applicant.contractor_profiles?.avatar_url"
           :src="applicant.contractor_profiles.avatar_url"
-          alt="Contractor profile"
-          class="w-16 h-16 rounded-full object-cover border-2 border-border"
+          :alt="`${applicant.contractor_profiles?.full_name}'s profile picture`"
+          class="w-14 h-14 rounded-full object-cover border border-border/50"
+          loading="lazy"
           @error="handleImageError"
-          @load="handleImageLoad"
         />
+        <!-- Fallback Avatar -->
         <div
           v-else
-          class="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground"
+          class="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-xl font-semibold text-muted-foreground border border-border/50"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="w-8 h-8"
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
+          {{ getContractorInitial(applicant.contractor_profiles?.full_name) }}
         </div>
       </div>
 
-      <!-- Applicant Info -->
-      <div class="flex-grow">
-        <div class="flex justify-between items-start">
-          <div>
-            <h3 class="text-lg font-medium text-foreground">
-              {{
-                formatDisplayName(applicant.contractor_profiles?.full_name) ||
-                'Unnamed Contractor'
-              }}
-            </h3>
-            <div class="flex items-center mt-1">
-              <!-- Rating -->
-              <div
-                v-if="applicant.contractor_profiles?.rating"
-                class="flex items-center text-yellow-500 dark:text-yellow-400"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="w-4 h-4"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <span class="ml-1 text-sm">{{
-                  applicant.contractor_profiles.rating.toFixed(1)
-                }}</span>
-              </div>
-
-              <!-- Specialties -->
-              <div
-                v-if="
-                  applicant.contractor_profiles?.skills &&
-                  applicant.contractor_profiles.skills.length > 0
-                "
-                class="ml-3"
-              >
-                <span
-                  v-for="(
-                    skill, index
-                  ) in applicant.contractor_profiles.skills.slice(0, 2)"
-                  :key="index"
-                  class="inline-block bg-muted text-foreground text-xs px-2 py-1 rounded mr-1 mb-1"
-                >
-                  {{ skill }}
-                </span>
-                <span
-                  v-if="applicant.contractor_profiles.skills.length > 2"
-                  class="text-xs text-gray-500 dark:text-gray-400"
-                >
-                  +{{ applicant.contractor_profiles.skills.length - 2 }}
-                  more
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Application Date -->
-          <div class="text-xs text-gray-500 dark:text-gray-400">
-            {{ formatDate(applicant.created_at) }}
-          </div>
-        </div>
-
-        <!-- Application Message -->
-        <div
-          v-if="applicant.message"
-          class="mt-3 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-3 rounded-md"
+      <!-- Info -->
+      <div class="flex-1 min-w-0">
+        <h3
+          class="text-lg font-semibold text-foreground mb-0.5 leading-tight truncate"
         >
-          <p class="whitespace-pre-wrap">{{ applicant.message }}</p>
-        </div>
+          {{ formatDisplayName(applicant.contractor_profiles?.full_name) }}
+        </h3>
+        <p class="text-sm text-muted-foreground truncate">
+          {{ $t('applications.appliedOn') }}
+          {{ formatDate(applicant.created_at) }}
+        </p>
+      </div>
 
-        <!-- Application Status -->
-        <div v-if="applicant.status" class="mt-3 flex items-center gap-2">
-          <span
-            :class="getStatusBadgeClass(applicant.status)"
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-          >
-            {{ getStatusText(applicant.status) }}
-          </span>
-
-          <!-- Chat Indicator for Selected Contractors -->
-          <div
-            v-if="applicant.status === 'selected'"
-            class="relative inline-flex items-center"
-            title="Chat conversation started"
-          >
-            <svg
-              class="w-4 h-4 text-blue-600 dark:text-blue-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-            <!-- Red dot indicator -->
-            <div
-              class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div
-          v-if="isJobOwner && applicant.status !== 'selected'"
-          class="mt-4 flex justify-end gap-2"
+      <!-- Status Badge -->
+      <div class="shrink-0">
+        <span
+          :class="getStatusBadgeClass(applicant.status)"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
         >
-          <!-- Message Button -->
-          <button
-            @click="handleMessageContractor"
-            :disabled="isCreatingChat"
-            class="bg-gray-600 dark:bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <div
-              v-if="isCreatingChat"
-              class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"
-            ></div>
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="w-4 h-4 mr-2"
-            >
-              <path
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-            {{ isCreatingChat ? 'Creating...' : 'Message' }}
-          </button>
-
-          <!-- Select Contractor Button -->
-          <button
-            @click="handleSelectContractor"
-            :disabled="isSelecting"
-            class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <div
-              v-if="isSelecting"
-              class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"
-            ></div>
-            {{ isSelecting ? 'Selecting...' : 'Select Contractor' }}
-          </button>
-        </div>
-
-        <!-- Selected Status with Message Button -->
-        <div
-          v-else-if="isJobOwner && applicant.status === 'selected'"
-          class="mt-4 flex justify-end gap-2"
-        >
-          <!-- Message Button for Selected Contractors -->
-          <button
-            @click="handleMessageContractor"
-            :disabled="isCreatingChat"
-            class="bg-gray-600 dark:bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <div
-              v-if="isCreatingChat"
-              class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"
-            ></div>
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="w-4 h-4 mr-2"
-            >
-              <path
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-            {{ isCreatingChat ? 'Creating...' : 'Message' }}
-          </button>
-
-          <div
-            class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-4 py-2 rounded-md text-sm font-medium"
-          >
-            ✓ Selected
-          </div>
-        </div>
+          {{ $t(`applicationStatus.${applicant.status}`) }}
+        </span>
       </div>
     </div>
-  </div>
+
+    <!-- Card Content -->
+    <div class="p-4 pt-0">
+      <!-- Rating and Location -->
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center space-x-4 text-sm text-muted-foreground">
+          <div
+            v-if="applicant.contractor_profiles?.rating"
+            class="flex items-center space-x-1"
+          >
+            <Star class="w-4 h-4 text-yellow-400" />
+            <span>{{ applicant.contractor_profiles.rating.toFixed(1) }}</span>
+          </div>
+          <div class="flex items-center space-x-1">
+            <MapPin class="w-4 h-4" />
+            <span
+              >{{ $t('applications.location') }}:
+              {{ applicant.profile?.location || $t('common.unknown') }}</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Application Message -->
+      <p
+        v-if="applicant.message"
+        class="text-sm text-muted-foreground/80 mb-3 line-clamp-2 leading-relaxed italic bg-background/30 p-3 rounded-md"
+      >
+        "{{ applicant.message }}"
+      </p>
+
+      <!-- Skills -->
+      <div
+        v-if="
+          applicant.contractor_profiles?.skills &&
+          applicant.contractor_profiles.skills.length > 0
+        "
+        class="flex flex-wrap gap-1.5 mb-4"
+      >
+        <span
+          v-for="skill in applicant.contractor_profiles.skills.slice(0, 3)"
+          :key="skill"
+          class="px-2.5 py-1 bg-muted/50 text-foreground text-xs rounded-lg font-medium"
+        >
+          {{ skill }}
+        </span>
+        <span
+          v-if="applicant.contractor_profiles.skills.length > 3"
+          class="px-2.5 py-1 bg-muted text-muted-foreground text-xs rounded-lg font-medium"
+        >
+          +{{ applicant.contractor_profiles.skills.length - 3 }}
+        </span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div v-if="isJobOwner" class="flex flex-wrap gap-2">
+        <template v-if="applicant.status === 'pending'">
+          <Button
+            @click.stop="handleSelectContractor"
+            :disabled="isSelecting"
+            size="sm"
+            class="flex-1"
+          >
+            <Check class="w-4 h-4 mr-1.5" />
+            {{
+              isSelecting
+                ? $t('dashboard.selecting')
+                : $t('dashboard.selectContractor')
+            }}
+          </Button>
+
+          <Button
+            @click.stop="handleMessageContractor"
+            :disabled="isCreatingChat"
+            size="sm"
+            variant="outline"
+            class="flex-1"
+          >
+            <MessageCircle class="w-4 h-4 mr-1.5" />
+            {{
+              isCreatingChat ? $t('dashboard.sending') : $t('dashboard.message')
+            }}
+          </Button>
+        </template>
+
+        <template v-else-if="applicant.status === 'selected'">
+          <Button
+            @click.stop="handleMessageContractor"
+            :disabled="isCreatingChat"
+            size="sm"
+            class="flex-1"
+          >
+            <MessageCircle class="w-4 h-4 mr-1.5" />
+            {{
+              isCreatingChat ? $t('dashboard.sending') : $t('dashboard.message')
+            }}
+          </Button>
+        </template>
+      </div>
+    </div>
+  </article>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useChatStore } from '../../stores/chat.js';
 import { formatDisplayName } from '@/lib/nameFormatter';
+import { Button } from '@/components/ui/button';
+import { Star, MapPin, Check, MessageCircle } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 const props = defineProps({
   applicant: {
@@ -251,182 +177,81 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
-// Router and stores
 const router = useRouter();
 const chatStore = useChatStore();
 
-// Local state for selection and messaging loading
 const isSelecting = ref(false);
 const isCreatingChat = ref(false);
 
-// Handle contractor selection with loading state
 async function handleSelectContractor() {
-  console.log(
-    '[JobApplicantCard] Handling contractor selection for:',
-    props.applicant.id
-  );
-
   isSelecting.value = true;
-
   try {
     emit('select', props.applicant.id);
   } catch (error) {
     console.error('[JobApplicantCard] Error during selection:', error);
   } finally {
-    // Reset loading state after a delay to show feedback
     setTimeout(() => {
       isSelecting.value = false;
     }, 1000);
   }
 }
 
-// Handle messaging contractor
 async function handleMessageContractor() {
-  console.log(
-    '[JobApplicantCard] Creating chat room with contractor:',
-    props.applicant.contractor_id
-  );
-
   if (!props.applicant.contractor_id) {
     console.error('[JobApplicantCard] No contractor ID available');
     return;
   }
-
   isCreatingChat.value = true;
-
   try {
-    // Create or get existing direct chat room
     const roomId = await chatStore.createDirectChatRoom(
       props.applicant.contractor_id
     );
-
-    console.log('[JobApplicantCard] Chat room created/found:', roomId);
-
-    // Navigate to the conversation
     await router.push(`/messages/${roomId}`);
   } catch (error) {
     console.error('[JobApplicantCard] Error creating chat room:', error);
-    // You could add a toast notification here to show the error to the user
   } finally {
     isCreatingChat.value = false;
   }
 }
 
-// Get status badge styling
+function viewContractorProfile(userId) {
+  if (userId) {
+    router.push(`/contractors/${userId}`);
+  }
+}
+
 function getStatusBadgeClass(status) {
   switch (status) {
     case 'selected':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      return 'bg-green-500/10 text-green-400 border border-green-500/20';
     case 'rejected':
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      return 'bg-red-500/10 text-red-400 border border-red-500/20';
     case 'pending':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
     default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+      return 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20';
   }
 }
 
-// Get human-readable status text
-function getStatusText(status) {
-  switch (status) {
-    case 'selected':
-      return 'Selected';
-    case 'rejected':
-      return 'Not Selected';
-    case 'pending':
-      return 'Pending Review';
-    default:
-      return status || 'Unknown';
-  }
+function getContractorInitial(name) {
+  return (name || '').charAt(0).toUpperCase() || '?';
 }
 
-// Debug logging for applicant data
-onMounted(() => {
-  console.log('[JobApplicantCard] Applicant data:', props.applicant);
-  console.log(
-    '[JobApplicantCard] Contractor profiles:',
-    props.applicant.contractor_profiles
-  );
-  console.log(
-    '[JobApplicantCard] Avatar URL:',
-    props.applicant.contractor_profiles?.avatar_url
-  );
-});
-
-// Handle image loading events
-function handleImageLoad() {
-  console.log(
-    '[JobApplicantCard] Image loaded successfully:',
-    props.applicant.contractor_profiles?.avatar_url
-  );
-}
-
-function handleImageError() {
+function handleImageError(event) {
   console.error(
     '[JobApplicantCard] Image failed to load:',
     props.applicant.contractor_profiles?.avatar_url
   );
+  event.target.src = '/images/contractor-default.svg';
 }
 
-// Format date to a readable format
 function formatDate(dateString) {
-  if (!dateString) return 'Unknown date';
-
+  if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
+  const userLocale = navigator.language || 'en-US';
+  return date.toLocaleDateString(userLocale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 }
 </script>
-
-<style scoped>
-.job-applicant-card {
-  background-color: white;
-  padding: 1rem; /* Equivalent to p-4 */
-  border-radius: 0.5rem; /* Equivalent to rounded-lg */
-  box-shadow:
-    0 1px 3px 0 rgba(0, 0, 0, 0.1),
-    0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Equivalent to shadow */
-  border: 1px solid #e5e7eb; /* Equivalent to border border-gray-200 */
-  transition: all 0.2s ease;
-}
-
-/* Dark mode styles */
-:root.dark .job-applicant-card,
-.dark .job-applicant-card {
-  background-color: #1f2937; /* gray-800 */
-  border-color: #374151; /* gray-700 */
-  box-shadow:
-    0 1px 3px 0 rgba(0, 0, 0, 0.3),
-    0 1px 2px 0 rgba(0, 0, 0, 0.2);
-}
-
-.job-applicant-card.unread {
-  border-left: 4px solid #3b82f6; /* Equivalent to border-l-4 border-l-blue-500 */
-  box-shadow:
-    0 0 0 1px rgba(59, 130, 246, 0.1),
-    0 4px 6px -1px rgba(59, 130, 246, 0.1);
-}
-
-:root.dark .job-applicant-card.unread,
-.dark .job-applicant-card.unread {
-  box-shadow:
-    0 0 0 1px rgba(59, 130, 246, 0.2),
-    0 4px 6px -1px rgba(59, 130, 246, 0.2);
-}
-
-.job-applicant-card:hover {
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Equivalent to shadow-md */
-}
-
-:root.dark .job-applicant-card:hover,
-.dark .job-applicant-card:hover {
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.4),
-    0 2px 4px -1px rgba(0, 0, 0, 0.3);
-}
-</style>

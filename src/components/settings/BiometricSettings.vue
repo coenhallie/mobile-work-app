@@ -1,28 +1,10 @@
 <template>
-  <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-foreground">
-        {{ $t('biometric.biometricAuthentication') }}
-      </h3>
-      <div class="flex items-center">
-        <svg
-          class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-          />
-        </svg>
-        <span class="text-sm text-gray-600 dark:text-gray-300">
-          {{ availabilityStatus }}
-        </span>
-      </div>
-    </div>
+  <div
+    class="w-full p-4 rounded-lg bg-transparent border border-gray-100 dark:border-gray-800"
+  >
+    <h2 class="text-xl font-normal mb-4 text-foreground">
+      {{ $t('biometric.biometricAuthentication') }}
+    </h2>
 
     <!-- Availability Status -->
     <div class="mb-6">
@@ -345,7 +327,7 @@ const testBiometricAuth = async () => {
     const result = await authenticateWithBiometrics(); // Returns {session, user} or null
 
     if (result && result.session) {
-      successMessage.value = `${getBiometricTypeName() || 'Biometric'} authentication test successful!`;
+      successMessage.value = `${getBiometricTypeName() || t('biometric.biometric')} ${t('biometric.testSuccess')}`;
       setTimeout(() => {
         successMessage.value = '';
       }, 3000);

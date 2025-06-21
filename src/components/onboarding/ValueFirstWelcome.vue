@@ -21,10 +21,10 @@
       </div>
 
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">
+        <h1 class="text-2xl font-bold text-black dark:text-white mb-2">
           Welcome to HandyApp
         </h1>
-        <p class="text-gray-600 text-lg leading-relaxed">
+        <p class="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
           Find skilled work opportunities<br />
           in your neighborhood
         </p>

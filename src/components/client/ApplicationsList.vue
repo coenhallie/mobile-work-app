@@ -23,179 +23,188 @@
     </div>
 
     <!-- Applications Grid -->
-    <div v-if="filteredApplications.length > 0" class="space-y-3">
-      <div
+    <div
+      v-if="filteredApplications.length > 0"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
+      <article
         v-for="application in filteredApplications"
         :key="application.id"
-        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600"
+        class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-700 hover:transform hover:-translate-y-0.5"
+        @click="viewContractorProfile(application.contractor.userId)"
+        role="button"
+        :aria-label="`View ${application.contractor.fullName}'s application`"
+        tabindex="0"
       >
-        <div class="flex gap-4">
-          <!-- Contractor Avatar -->
-          <div class="flex-shrink-0">
-            <div class="relative">
-              <img
-                v-if="getAvatarUrl(application.contractor)"
-                :src="getAvatarUrl(application.contractor)"
-                :alt="application.contractor.fullName"
-                class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
-                @error="(e) => handleImageError(e, application.contractor)"
-              />
-              <!-- Fallback Avatar with Initial -->
-              <div
-                v-else
-                class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-semibold text-gray-500 dark:text-gray-400 border-2 border-gray-100 dark:border-gray-700"
-              >
-                {{ getContractorInitial(application.contractor) }}
-              </div>
-              <!-- Online status indicator -->
-              <div
-                class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"
-              ></div>
+        <!-- Header Section -->
+        <div class="flex items-start space-x-4 p-4">
+          <!-- Profile Image -->
+          <div class="relative">
+            <img
+              v-if="getAvatarUrl(application.contractor)"
+              :src="getAvatarUrl(application.contractor)"
+              :alt="`${application.contractor.fullName}'s profile picture`"
+              class="w-14 h-14 rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0"
+              loading="lazy"
+              @error="(e) => handleImageError(e, application.contractor)"
+            />
+            <!-- Fallback Avatar -->
+            <div
+              v-else
+              class="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-semibold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shrink-0"
+            >
+              {{ getContractorInitial(application.contractor) }}
             </div>
+            <!-- Online status indicator -->
+            <div
+              class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"
+            ></div>
           </div>
 
-          <!-- Main Content Column -->
+          <!-- Info -->
           <div class="flex-1 min-w-0">
-            <!-- Row 1: Name, Rating, and Status Badge -->
-            <div class="flex items-start justify-between mb-1">
-              <div class="flex-1 min-w-0">
-                <h4
-                  class="font-semibold text-gray-900 dark:text-white text-lg truncate inline mr-2"
-                >
-                  {{ application.contractor.fullName }}
-                </h4>
-                <div
-                  v-if="application.contractor.rating"
-                  class="inline-flex items-center align-middle"
-                >
-                  <Star
-                    class="w-3.5 h-3.5 fill-yellow-400 text-yellow-400 mr-0.5"
-                  />
-                  <span
-                    class="text-xs font-medium text-yellow-700 dark:text-yellow-300 pt-px"
-                  >
-                    {{ application.contractor.rating.toFixed(1) }}
-                  </span>
-                </div>
-              </div>
-              <div class="flex-shrink-0 ml-2">
-                <ApplicationStatusBadge :status="application.status" />
-              </div>
-            </div>
-
-            <!-- Row 2: Job Title -->
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-0.5 mb-2">
-              Applied to:
-              <span class="font-medium text-gray-800 dark:text-gray-200">{{
-                application.jobTitle
-              }}</span>
-            </div>
-
-            <!-- Row 3: Experience & Applied Time -->
-            <div
-              class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-400 mb-3"
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-0.5 leading-tight truncate"
             >
-              <span v-if="application.contractor.experienceLevel">
-                {{ application.contractor.experienceLevel }}
-              </span>
-              <span
-                v-if="
-                  application.contractor.experienceLevel &&
-                  application.appliedAt
-                "
-                class="mx-1.5"
-                >&bull;</span
-              >
-              <span>
-                Applied {{ formatRelativeTime(application.appliedAt) }}
-              </span>
-            </div>
+              {{ application.contractor.fullName }}
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 truncate">
+              Applied to: {{ application.jobTitle }}
+            </p>
+          </div>
 
-            <!-- Application Message -->
-            <div
-              v-if="application.message"
-              class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3"
-            >
-              <p class="text-sm text-gray-700 dark:text-gray-300 italic">
-                "{{ application.message }}"
-              </p>
-            </div>
-
-            <!-- Skills -->
-            <div v-if="application.contractor.skills?.length" class="mb-4">
-              <div class="flex flex-wrap gap-1.5">
-                <span
-                  v-for="skill in application.contractor.skills.slice(0, 4)"
-                  :key="skill"
-                  class="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full"
-                >
-                  {{ skill }}
-                </span>
-                <span
-                  v-if="application.contractor.skills.length > 4"
-                  class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full"
-                >
-                  +{{ application.contractor.skills.length - 4 }} more
-                </span>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex flex-wrap gap-2">
-              <Button
-                v-if="application.status === 'pending'"
-                size="sm"
-                @click="selectApplicant(application)"
-                class="flex-shrink-0 bg-green-600 hover:bg-green-700 text-white text-xs"
-              >
-                <Check class="w-3 h-3 mr-1.5" />
-                {{ $t('dashboard.actions.select') }}
-              </Button>
-
-              <Button
-                v-if="application.status === 'pending'"
-                size="sm"
-                variant="outline"
-                @click="rejectApplicant(application)"
-                class="flex-shrink-0 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 text-xs"
-              >
-                <X class="w-3 h-3 mr-1.5" />
-                {{ $t('dashboard.actions.reject') }}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                @click="viewContractorProfile(application.contractor.userId)"
-                class="flex-shrink-0 text-xs dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-              >
-                <User class="w-3 h-3 mr-1.5" />
-                {{ $t('dashboard.actions.profile') }}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                @click="viewJobDetails(application.jobId)"
-                class="flex-shrink-0 text-xs dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-              >
-                <Eye class="w-3 h-3 mr-1.5" />
-                {{ $t('dashboard.actions.job') }}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                @click="sendMessage(application)"
-                class="flex-shrink-0 text-xs dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-              >
-                <MessageCircle class="w-3 h-3 mr-1.5" />
-                {{ $t('dashboard.actions.message') }}
-              </Button>
-            </div>
+          <!-- Status Badge -->
+          <div class="shrink-0">
+            <ApplicationStatusBadge :status="application.status" />
           </div>
         </div>
-      </div>
+
+        <!-- Card Content -->
+        <div class="p-4">
+          <!-- Rating and Applied Time -->
+          <div class="flex items-center justify-between mb-2">
+            <div
+              class="flex items-center space-x-3 text-sm text-gray-500 dark:text-gray-400"
+            >
+              <div
+                v-if="application.contractor.rating"
+                class="flex items-center space-x-1"
+              >
+                <span class="text-yellow-400">★</span>
+                <span>{{ application.contractor.rating.toFixed(1) }}</span>
+              </div>
+              <div class="flex items-center space-x-1">
+                <span>📍</span>
+                <span>{{
+                  application.contractor.location || 'Location not specified'
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Experience and Applied Time -->
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-1">
+                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                <span
+                  class="text-xs font-medium text-green-600 dark:text-green-400"
+                >
+                  {{
+                    application.contractor.experienceLevel ||
+                    'Experience not specified'
+                  }}
+                </span>
+              </div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+              Applied {{ formatRelativeTime(application.appliedAt) }}
+            </span>
+          </div>
+
+          <!-- Application Message -->
+          <p
+            v-if="application.message"
+            class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2 leading-relaxed italic"
+          >
+            "{{ application.message }}"
+          </p>
+
+          <!-- Skills -->
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            <span
+              v-for="skill in (application.contractor.skills || []).slice(0, 3)"
+              :key="skill"
+              class="px-2.5 py-1 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-lg font-medium"
+            >
+              {{ skill }}
+            </span>
+            <span
+              v-if="(application.contractor.skills || []).length > 3"
+              class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-lg font-medium"
+            >
+              +{{ (application.contractor.skills || []).length - 3 }}
+            </span>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-2">
+            <Button
+              v-if="application.status === 'pending'"
+              size="sm"
+              @click.stop="selectApplicant(application)"
+              class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs"
+            >
+              <Check class="w-3 h-3 mr-1.5" />
+              {{ $t('dashboard.actions.select') }}
+            </Button>
+
+            <Button
+              v-if="application.status === 'pending'"
+              size="sm"
+              variant="outline"
+              @click.stop="rejectApplicant(application)"
+              class="flex-1 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 text-xs"
+            >
+              <X class="w-3 h-3 mr-1.5" />
+              {{ $t('dashboard.actions.reject') }}
+            </Button>
+          </div>
+
+          <!-- Secondary Action Buttons -->
+          <div class="flex flex-wrap gap-2 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              @click.stop="viewContractorProfile(application.contractor.userId)"
+              class="flex-1 text-xs dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              <User class="w-3 h-3 mr-1.5" />
+              {{ $t('dashboard.actions.profile') }}
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              @click.stop="viewJobDetails(application.jobId)"
+              class="flex-1 text-xs dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              <Eye class="w-3 h-3 mr-1.5" />
+              {{ $t('dashboard.actions.job') }}
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              @click.stop="sendMessage(application)"
+              class="flex-1 text-xs dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              <MessageCircle class="w-3 h-3 mr-1.5" />
+              {{ $t('dashboard.actions.message') }}
+            </Button>
+          </div>
+        </div>
+      </article>
     </div>
 
     <!-- Empty State -->
@@ -332,5 +341,31 @@ const sendMessage = (application) => {
 <style scoped>
 .applications-list {
   /* Component styles */
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ensure smooth transitions for hover effects */
+article {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced hover effect for the entire card */
+article:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 25px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure backdrop blur works properly */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 </style>
