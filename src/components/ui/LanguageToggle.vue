@@ -1,52 +1,57 @@
 <template>
-  <div class="language-toggle">
-    <div class="toggle-container">
+  <div class="flex flex-col gap-3">
+    <div class="flex gap-1 rounded-lg border border-border bg-background p-1">
       <!-- Spanish Option -->
       <button
         @click="selectLanguage('es-PE')"
-        class="language-option"
-        :class="{
-          active: currentLocale === 'es-PE',
-          inactive: currentLocale !== 'es-PE',
-        }"
+        :class="[
+          'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 outline-none focus:ring-2 focus:ring-blue-500',
+          currentLocale === 'es-PE'
+            ? 'bg-blue-600 text-white shadow-sm'
+            : 'text-muted-foreground hover:bg-muted/50',
+        ]"
         :aria-pressed="currentLocale === 'es-PE'"
         :aria-label="
           $t('profile.selectLanguage', { language: 'Español (Perú)' })
         "
       >
-        <span class="flag">🇵🇪</span>
-        <span class="language-name">Español</span>
+        <span class="text-lg">🇵🇪</span>
+        <span class="font-medium sm:text-xs">Español</span>
       </button>
 
       <!-- English Option -->
       <button
         @click="selectLanguage('en-US')"
-        class="language-option"
-        :class="{
-          active: currentLocale === 'en-US',
-          inactive: currentLocale !== 'en-US',
-        }"
+        :class="[
+          'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 outline-none focus:ring-2 focus:ring-blue-500',
+          currentLocale === 'en-US'
+            ? 'bg-blue-600 text-white shadow-sm'
+            : 'text-muted-foreground hover:bg-muted/50',
+        ]"
         :aria-pressed="currentLocale === 'en-US'"
         :aria-label="
           $t('profile.selectLanguage', { language: 'English (American)' })
         "
       >
-        <span class="flag">🇺🇸</span>
-        <span class="language-name">English</span>
+        <span class="text-lg">🇺🇸</span>
+        <span class="font-medium sm:text-xs">English</span>
       </button>
     </div>
 
     <!-- Current Selection Indicator -->
-    <div class="selection-indicator">
-      <div class="indicator-text">
+    <div class="text-center">
+      <div class="text-sm text-muted-foreground">
         {{ $t('profile.currentLanguage') }}:
-        <span class="current-lang">
+        <span class="font-medium text-foreground">
           {{ currentLocaleInfo.flag }} {{ currentLocaleInfo.name }}
         </span>
       </div>
 
       <!-- Language Change Confirmation -->
-      <div v-if="showConfirmation" class="confirmation-message">
+      <div
+        v-if="showConfirmation"
+        class="mt-2 rounded-md bg-green-500 px-3 py-2 text-center text-sm font-medium text-white confirmation-animation"
+      >
         ✓ {{ $t('profile.language') }} {{ $t('buttons.save') }}d!
       </div>
     </div>
@@ -96,113 +101,6 @@ const selectLanguage = (localeCode) => {
 </script>
 
 <style scoped>
-.language-toggle {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.toggle-container {
-  display: flex;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  padding: 4px;
-  gap: 4px;
-  background-color: white;
-}
-
-.dark .toggle-container {
-  border-color: #4b5563;
-  background-color: #1f2937;
-}
-
-.language-option {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-  cursor: pointer;
-  border: none;
-  outline: none;
-}
-
-.language-option:focus {
-  box-shadow: 0 0 0 2px #3b82f6;
-}
-
-.language-option.active {
-  background-color: #2563eb;
-  color: white;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.language-option.inactive {
-  color: #6b7280;
-  background-color: transparent;
-}
-
-.language-option.inactive:hover {
-  color: #111827;
-  background-color: #f3f4f6;
-}
-
-.dark .language-option.inactive {
-  color: #d1d5db;
-}
-
-.dark .language-option.inactive:hover {
-  color: white;
-  background-color: #374151;
-}
-
-.flag {
-  font-size: 18px;
-}
-
-.language-name {
-  font-weight: 500;
-}
-
-.selection-indicator {
-  text-align: center;
-}
-
-.indicator-text {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.dark .indicator-text {
-  color: #9ca3af;
-}
-
-.current-lang {
-  font-weight: 500;
-  color: #111827;
-}
-
-.dark .current-lang {
-  color: white;
-}
-
-.confirmation-message {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background-color: #10b981;
-  color: white;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-  animation: fadeInOut 2s ease-in-out;
-}
-
 @keyframes fadeInOut {
   0% {
     opacity: 0;
@@ -222,19 +120,7 @@ const selectLanguage = (localeCode) => {
   }
 }
 
-/* Mobile responsive adjustments */
-@media (max-width: 640px) {
-  .language-name {
-    font-size: 12px;
-  }
-
-  .language-option {
-    padding: 8px;
-    gap: 4px;
-  }
-
-  .flag {
-    font-size: 16px;
-  }
+.confirmation-animation {
+  animation: fadeInOut 2s ease-in-out;
 }
 </style>

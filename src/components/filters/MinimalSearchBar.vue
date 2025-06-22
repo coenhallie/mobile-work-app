@@ -458,6 +458,25 @@ defineExpose({
   .suggestions-dropdown {
     @apply bg-gray-800 border-gray-700;
   }
+}
+
+/* Class-based dark mode support */
+.dark .search-input-container {
+  @apply bg-gray-800 border-gray-700;
+  @apply hover:border-gray-600;
+  @apply focus-within:border-blue-500;
+}
+
+.dark .search-input {
+  @apply text-gray-100 placeholder-gray-400;
+}
+
+.dark .clear-button {
+  @apply text-gray-400 hover:text-gray-200 hover:bg-gray-700;
+}
+
+.dark .suggestions-dropdown {
+  @apply bg-gray-800 border-gray-700;
 
   .suggestion-item {
     @apply hover:bg-gray-700;

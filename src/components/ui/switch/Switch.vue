@@ -1,51 +1,36 @@
-<template>
-  <div class="custom-switch" @click="toggle" :class="{ 'is-checked': checked }">
-    <span class="switch-handle"></span>
-  </div>
-</template>
-
 <script setup>
+import { SwitchRoot, SwitchThumb } from 'reka-ui';
+import { cn } from '@/lib/utils';
+
 const props = defineProps({
-  checked: {
-    type: Boolean,
-    default: false,
-  },
+  modelValue: { type: Boolean, required: false },
+  defaultChecked: { type: Boolean, required: false },
+  disabled: { type: Boolean, required: false },
+  asChild: { type: Boolean, required: false },
+  as: { type: null, required: false },
+  class: { type: null, required: false },
 });
 
-const emit = defineEmits(['update:checked']);
-
-const toggle = () => {
-  emit('update:checked', !props.checked);
-};
+const emits = defineEmits(['update:modelValue']);
 </script>
 
-<style scoped>
-.custom-switch {
-  width: 40px;
-  height: 20px;
-  background-color: #ccc;
-  border-radius: 10px;
-  position: relative;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.custom-switch.is-checked {
-  background-color: #4a90e2; /* Example checked color */
-}
-
-.switch-handle {
-  width: 18px;
-  height: 18px;
-  background-color: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  transition: transform 0.3s;
-}
-
-.custom-switch.is-checked .switch-handle {
-  transform: translateX(20px);
-}
-</style>
+<template>
+  <SwitchRoot
+    v-bind="props"
+    :class="
+      cn(
+        'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
+        props.class
+      )
+    "
+    @update:checked="emits('update:modelValue', $event)"
+  >
+    <SwitchThumb
+      :class="
+        cn(
+          'pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0'
+        )
+      "
+    />
+  </SwitchRoot>
+</template>

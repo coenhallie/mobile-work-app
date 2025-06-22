@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="w-full p-4 rounded-lg bg-transparent border border-gray-100 dark:border-gray-800"
-  >
+  <div class="w-full p-4 rounded-lg bg-transparent border border-border">
     <h2 class="text-xl font-normal mb-4 text-foreground">
       {{ $t('biometric.biometricAuthentication') }}
     </h2>
@@ -47,10 +45,10 @@
       <!-- Enable/Disable Toggle -->
       <div class="flex items-center justify-between">
         <div>
-          <label class="text-sm font-medium text-gray-900 dark:text-white">
+          <label class="text-sm font-medium text-foreground">
             {{ $t('biometric.enableBiometricLogin') }}
           </label>
-          <p class="text-xs text-gray-600 dark:text-gray-400">
+          <p class="text-xs text-muted-foreground">
             {{ $t('biometric.biometricLoginDescription') }}
           </p>
         </div>
@@ -58,9 +56,7 @@
           @click="toggleBiometricAuth"
           :disabled="isLoading"
           class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-          :class="
-            isBiometricEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
-          "
+          :class="isBiometricEnabled ? 'bg-blue-600' : 'bg-muted'"
         >
           <span
             class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
@@ -70,14 +66,11 @@
       </div>
 
       <!-- Test Authentication Button -->
-      <div
-        v-if="isBiometricEnabled"
-        class="pt-4 border-t border-gray-200 dark:border-gray-600"
-      >
+      <div v-if="isBiometricEnabled" class="pt-4 border-t border-border">
         <button
           @click="testBiometricAuth"
           :disabled="isLoading"
-          class="w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-muted-foreground hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
             v-if="!isLoading"
@@ -95,7 +88,7 @@
           </svg>
           <div
             v-else
-            class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"
+            class="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin"
           ></div>
           <span class="text-sm">
             {{
@@ -218,7 +211,7 @@ const statusBgClass = computed(() => {
       ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
       : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800';
   }
-  return 'bg-muted ';
+  return 'bg-muted';
 });
 
 const statusIconClass = computed(() => {

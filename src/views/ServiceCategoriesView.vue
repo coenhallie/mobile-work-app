@@ -19,25 +19,17 @@
     >
       <Input
         v-model="searchQuery"
-        :placeholder="
-          selectedCategoryFilter
-            ? $t('services.searchInCategoryPlaceholder', {
-                category:
-                  allCategories.find((c) => c.id === selectedCategoryFilter)
-                    ?.name_es || 'category',
-              })
-            : $t('services.searchAllServicesPlaceholder')
-        "
-        class="flex-grow"
+        :placeholder="$t('services.searchAllServicesPlaceholder')"
+        class="flex-grow !bg-white !text-gray-900 !border-gray-300 placeholder:!text-gray-500 dark:!bg-gray-800 dark:!text-gray-100 dark:!border-gray-600 dark:placeholder:!text-gray-400"
         type="text"
       />
       <div class="relative">
         <Button
-          @click="toggleFilterDropdown"
+          @click="isFilterSheetOpen = true"
           variant="outline"
-          class="relative"
+          class="relative !bg-white !text-gray-900 !border-gray-300 hover:!bg-gray-50 dark:!bg-gray-800 dark:!text-gray-100 dark:!border-gray-600 dark:hover:!bg-gray-700"
         >
-          <!-- Filter Icon Placeholder - Replace with actual SVG or component -->
+          <!-- Filter Icon Placeholder -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
@@ -54,43 +46,28 @@
             ></polygon>
           </svg>
           <span
-            v-if="selectedCategoryFilter"
+            v-if="activeFilters.categoryId"
             class="ml-2 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full"
           >
             {{
-              allCategories.find((c) => c.id === selectedCategoryFilter)
+              allCategories.find((c) => c.id === activeFilters.categoryId)
                 ?.name_es
             }}
           </span>
         </Button>
-        <!-- Filter Dropdown -->
-        <div
-          v-if="isFilterDropdownOpen"
-          class="absolute right-0 mt-2 w-64 bg-popover border border-border rounded-md shadow-lg z-30 py-1"
-        >
-          <button
-            @click="clearCategoryFilter"
-            class="w-full text-left px-3 py-2 text-sm hover:bg-muted text-foreground"
-            :class="{ 'bg-muted font-semibold': !selectedCategoryFilter }"
-          >
-            {{ $t('services.allCategoriesTop20') }}
-          </button>
-          <div class="my-1 border-t border-border"></div>
-          <button
-            v-for="cat in allCategories"
-            :key="cat.id"
-            @click="applyCategoryFilter(cat.id)"
-            class="w-full text-left px-3 py-2 text-sm hover:bg-muted text-foreground flex items-center"
-            :class="{
-              'bg-muted font-semibold text-primary':
-                selectedCategoryFilter === cat.id,
-            }"
-          >
-            {{ cat.name_es }}
-          </button>
-        </div>
       </div>
     </div>
+
+    <!-- Bottom Sheet Filter -->
+    <ServiceBottomSheetFilter
+      v-model="isFilterSheetOpen"
+      :filters="activeFilters"
+      :categories="allCategories"
+      :loading="isLoading"
+      :result-count="displayedItems.length"
+      @apply="handleApplyFilters"
+      @clear="handleClearFilters"
+    />
 
     <!-- Error Message -->
     <div
@@ -114,7 +91,7 @@
         v-if="isLoading"
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
       >
-        <div v-for="i in selectedCategoryFilter ? 4 : 8" :key="`skeleton-${i}`">
+        <div v-for="i in 8" :key="`skeleton-${i}`">
           <CategoryCardSkeleton />
         </div>
       </div>
@@ -141,24 +118,18 @@
               ></div>
               <div class="relative z-10 flex flex-col justify-end h-full p-6">
                 <h3
-                  class="text-3xl md:text-4xl font-bold text-white text-shadow"
+                  class="text-3xl md:text-4xl font-normal text-white text-shadow"
                 >
                   {{ item.name_es }}
                 </h3>
               </div>
             </div>
             <p
-              v-if="searchQuery && selectedCategoryFilter"
+              v-if="searchQuery && activeFilters.categoryId"
               class="mt-3 text-sm text-muted-foreground"
             >
               Showing search results for "{{ searchQuery }}" in
               {{ item.name_es }}:
-            </p>
-            <p
-              v-else-if="selectedCategoryFilter"
-              class="mt-3 text-sm text-muted-foreground"
-            >
-              All services in {{ item.name_es }}:
             </p>
           </div>
 
@@ -252,6 +223,7 @@ import { useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabaseClientManager';
+import ServiceBottomSheetFilter from '@/components/filters/ServiceFilterBottomSheet.vue';
 
 // Lazy-load components
 const CategoryCard = defineAsyncComponent(
@@ -269,10 +241,14 @@ const isComponentVisible = ref(true);
 const isLoading = ref(true);
 const isLoadingMore = ref(false);
 const searchQuery = ref('');
-const selectedCategoryFilter = ref(null);
-const isFilterDropdownOpen = ref(false);
+const isFilterSheetOpen = ref(false);
 const errorMessage = ref('');
 const scrollContainer = ref(null);
+
+const activeFilters = ref({
+  categoryId: null,
+  sortBy: 'popularity',
+});
 
 // Pagination state
 const currentPage = ref(0);
@@ -501,7 +477,7 @@ async function loadMoreServices() {
   if (
     isLoadingMore.value ||
     !hasMoreServices.value ||
-    selectedCategoryFilter.value ||
+    activeFilters.value.categoryId ||
     searchQuery.value.trim()
   ) {
     return;
@@ -549,12 +525,25 @@ const topServices = computed(() => {
 const displayedItems = computed(() => {
   let itemsStructure = [];
   const query = searchQuery.value.toLowerCase().trim();
+  const { categoryId, sortBy } = activeFilters.value;
 
-  if (selectedCategoryFilter.value) {
+  const sortServices = (services) => {
+    return [...services].sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name_es.localeCompare(b.name_es);
+        case 'newest':
+          return new Date(b.created_at) - new Date(a.created_at);
+        case 'popularity':
+        default:
+          return b.popularity - a.popularity;
+      }
+    });
+  };
+
+  if (categoryId) {
     // --- Filtered by Category ---
-    const category = allCategories.value.find(
-      (c) => c.id === selectedCategoryFilter.value
-    );
+    const category = allCategories.value.find((c) => c.id === categoryId);
     if (!category) return [];
 
     itemsStructure.push({ type: 'category_header', ...category });
@@ -573,10 +562,12 @@ const displayedItems = computed(() => {
       );
     }
 
-    if (servicesInThisCategory.length > 0) {
+    const sortedServices = sortServices(servicesInThisCategory);
+
+    if (sortedServices.length > 0) {
       itemsStructure.push({
         type: 'service_list',
-        services: servicesInThisCategory,
+        services: sortedServices,
       });
     } else {
       if (query) {
@@ -592,7 +583,7 @@ const displayedItems = computed(() => {
       }
     }
   } else {
-    // --- No Category Filter: Show Top 20 or Search Results across all ---
+    // --- No Category Filter: Show all or Search Results ---
     let servicesToShow = [];
     if (query) {
       servicesToShow = allServices.value.filter(
@@ -611,22 +602,18 @@ const displayedItems = computed(() => {
         });
       }
     } else {
-      // Default: Top 20 services
-      servicesToShow = topServices.value;
-      if (servicesToShow.length === 0 && allServices.value.length > 0) {
-        itemsStructure.push({
-          type: 'no_results_message',
-          message_key: 'no_top_services_available_check_filters',
-        });
-      } else if (allServices.value.length === 0) {
-        itemsStructure.push({
-          type: 'no_results_message',
-          message_key: 'no_services_defined',
-        });
-      }
+      servicesToShow = allServices.value;
     }
-    if (servicesToShow.length > 0) {
-      itemsStructure.push({ type: 'service_list', services: servicesToShow });
+
+    const sortedServices = sortServices(servicesToShow);
+
+    if (sortedServices.length > 0) {
+      itemsStructure.push({ type: 'service_list', services: sortedServices });
+    } else if (!query) {
+      itemsStructure.push({
+        type: 'no_results_message',
+        message_key: 'no_services_defined',
+      });
     }
   }
   return itemsStructure;
@@ -645,32 +632,22 @@ const selectServiceForPostJob = (service) => {
 /**
  * Apply category filter and fetch services for that category
  */
-const applyCategoryFilter = async (categoryId) => {
-  selectedCategoryFilter.value = categoryId;
-  isFilterDropdownOpen.value = false;
-  searchQuery.value = '';
+const handleApplyFilters = (filters) => {
+  activeFilters.value = filters;
+  isFilterSheetOpen.value = false;
 
-  // Fetch services for the selected category
-  isLoading.value = true;
-  try {
-    await fetchServicesForCategory(categoryId);
-  } catch (error) {
-    console.error('Error applying category filter:', error);
-  } finally {
-    isLoading.value = false;
+  if (filters.categoryId) {
+    fetchServicesForCategory(filters.categoryId);
+  } else {
+    fetchTopServices(0, false);
   }
 };
 
-const clearCategoryFilter = () => {
-  selectedCategoryFilter.value = null;
-  isFilterDropdownOpen.value = false;
-  categoryServices.value = [];
-  currentPage.value = 0;
-  hasMoreServices.value = true;
-};
-
-const toggleFilterDropdown = () => {
-  isFilterDropdownOpen.value = !isFilterDropdownOpen.value;
+const handleClearFilters = () => {
+  const cleared = { categoryId: null, sortBy: 'popularity' };
+  activeFilters.value = cleared;
+  isFilterSheetOpen.value = false;
+  fetchTopServices(0, false);
 };
 
 // Watch for search query changes to trigger search
@@ -681,7 +658,7 @@ watch(
     currentPage.value = 0;
     hasMoreServices.value = true;
 
-    if (newQuery.trim() && !selectedCategoryFilter.value) {
+    if (newQuery.trim() && !activeFilters.value.categoryId) {
       // Only search across all services if no category is selected
       try {
         const searchResults = await searchAllServices(newQuery.trim());
@@ -690,7 +667,7 @@ watch(
       } catch (error) {
         console.error('Error searching services:', error);
       }
-    } else if (!newQuery.trim() && !selectedCategoryFilter.value) {
+    } else if (!newQuery.trim() && !activeFilters.value.categoryId) {
       // Reset to top services when search is cleared
       await fetchTopServices(0, false);
     }

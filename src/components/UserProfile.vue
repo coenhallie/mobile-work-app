@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full max-w-md mx-auto bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg p-6"
+    class="w-full max-w-md mx-auto bg-card text-card-foreground border border-border rounded-lg p-6"
   >
     <!-- Profile Header -->
     <div class="flex flex-col items-center mb-6">
