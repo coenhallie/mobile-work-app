@@ -2,8 +2,10 @@
   <div class="w-full">
     <!-- Section Header -->
     <div class="mb-6">
-      <h3 class="text-xl font-semibold text-foreground mb-2">Portfolio</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        Portfolio
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">
         Recent work and completed projects
       </p>
     </div>
@@ -20,7 +22,7 @@
       v-else-if="!workItems || workItems.length === 0"
       class="text-center py-12"
     >
-      <div class="text-muted-foreground">
+      <div class="text-gray-600 dark:text-gray-400">
         <svg
           class="mx-auto h-12 w-12 mb-4"
           fill="none"
@@ -71,7 +73,7 @@
                   class="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50"
                 >
                   <svg
-                    class="h-12 w-12 text-muted-foreground"
+                    class="h-12 w-12 text-gray-600 dark:text-gray-400"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -89,7 +91,7 @@
               <!-- Simple Description -->
               <CardContent class="p-3">
                 <p
-                  class="text-sm text-muted-foreground line-clamp-2 leading-relaxed"
+                  class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed"
                 >
                   {{ item.description }}
                 </p>

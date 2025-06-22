@@ -20,7 +20,9 @@
               v-if="isSignedIn"
               class="flex align-middle items-center justify-between"
             >
-              <h1 class="text-3xl md:text-5xl font-normal mr-4">
+              <h1
+                class="text-3xl md:text-5xl font-normal mr-4 text-black dark:text-white"
+              >
                 <!-- Removed mb-1 for better vertical alignment -->
                 {{ timeBasedGreeting }}, {{ profileName || 'User' }}!
               </h1>

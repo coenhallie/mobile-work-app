@@ -188,14 +188,16 @@
             <div class="flex justify-between items-start mb-6">
               <div class="flex-1">
                 <h1
-                  class="text-2xl font-normal text-foreground mb-2 leading-tight"
+                  class="text-2xl font-normal text-gray-900 dark:text-white mb-2 leading-tight"
                 >
                   {{ jobStore.currentJob.category_name }}
                   {{ $t('jobs.serviceRequest') }}
                 </h1>
 
                 <!-- Location with icon -->
-                <div class="flex items-center text-muted-foreground mb-4">
+                <div
+                  class="flex items-center text-gray-600 dark:text-gray-300 mb-4"
+                >
                   <svg
                     class="w-4 h-4 mr-2"
                     fill="none"
@@ -266,10 +268,10 @@
               <!-- Description section -->
               <div class="border-b border-border pb-6">
                 <h2
-                  class="text-lg font-normal text-foreground mb-3 flex items-center"
+                  class="text-lg font-normal text-gray-900 dark:text-white mb-3 flex items-center"
                 >
                   <svg
-                    class="w-4 h-4 mr-2 text-muted-foreground"
+                    class="w-4 h-4 mr-2 text-gray-600 dark:text-gray-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -284,7 +286,7 @@
                   {{ $t('jobs.description') }}
                 </h2>
                 <p
-                  class="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap"
+                  class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap"
                 >
                   {{ jobStore.currentJob.description }}
                 </p>
@@ -313,10 +315,12 @@
                     </svg>
                   </div>
                   <div>
-                    <h3 class="font-medium text-foreground mb-1 text-sm">
+                    <h3
+                      class="font-medium text-gray-900 dark:text-white mb-1 text-sm"
+                    >
                       {{ $t('jobs.preferredTiming') }}
                     </h3>
-                    <p class="text-muted-foreground text-sm">
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">
                       {{
                         formatDateTime(jobStore.currentJob.preferred_datetime)
                       }}
@@ -342,10 +346,12 @@
                     </svg>
                   </div>
                   <div>
-                    <h3 class="font-medium text-foreground mb-1 text-sm">
+                    <h3
+                      class="font-medium text-gray-900 dark:text-white mb-1 text-sm"
+                    >
                       {{ $t('jobs.serviceCategory') }}
                     </h3>
-                    <p class="text-muted-foreground text-sm">
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">
                       {{ jobStore.currentJob.category_name }}
                     </p>
                   </div>
@@ -372,10 +378,14 @@
                     </svg>
                   </div>
                   <div>
-                    <h3 class="font-medium text-foreground mb-1 text-sm">
+                    <h3
+                      class="font-medium text-gray-900 dark:text-white mb-1 text-sm"
+                    >
                       {{ $t('jobs.budget') }}
                     </h3>
-                    <p class="text-muted-foreground text-lg font-semibold">
+                    <p
+                      class="text-gray-600 dark:text-gray-300 text-lg font-semibold"
+                    >
                       ${{ jobStore.currentJob.budget }}
                     </p>
                   </div>
@@ -451,7 +461,7 @@
           data-section="applicants"
         >
           <div class="max-w-6xl mx-auto">
-            <h2 class="text-2xl font-normal text-foreground mb-6">
+            <h2 class="text-2xl font-normal text-gray-900 dark:text-white mb-6">
               {{ $t('jobs.applicants') }}
             </h2>
             <JobApplicantsList
@@ -475,11 +485,12 @@
       >
         <div class="max-w-6xl mx-auto flex items-center justify-between">
           <div v-if="jobStore.currentJob.budget" class="hidden sm:block">
-            <div class="text-lg font-bold text-foreground">
+            <div class="text-lg font-bold text-gray-900 dark:text-white">
               ${{ jobStore.currentJob.budget }}
-              <span class="text-sm font-normal text-muted-foreground">{{
-                $t('jobs.budget').toLowerCase()
-              }}</span>
+              <span
+                class="text-sm font-normal text-gray-600 dark:text-gray-300"
+                >{{ $t('jobs.budget').toLowerCase() }}</span
+              >
             </div>
           </div>
           <Button
@@ -602,10 +613,10 @@
                 </svg>
               </div>
               <div>
-                <h2 class="text-xl font-bold text-foreground">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">
                   {{ $t('jobs.applyForJob') }}
                 </h2>
-                <p class="text-sm text-muted-foreground">
+                <p class="text-sm text-gray-600 dark:text-gray-300">
                   {{ $t('jobs.submitApplication') }}
                 </p>
               </div>
@@ -655,7 +666,7 @@
     <div v-else class="w-full py-16 text-center">
       <div class="max-w-6xl mx-auto px-4">
         <div class="bg-muted/10 border border-muted/20 rounded-2xl p-8">
-          <div class="text-muted-foreground text-lg font-medium">
+          <div class="text-gray-600 dark:text-gray-300 text-lg font-medium">
             {{ $t('jobs.jobNotFound') }}
           </div>
         </div>

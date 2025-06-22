@@ -252,32 +252,6 @@
             </div>
           </div>
         </Transition>
-
-        <!-- Application Status Summary - Only visible when applications are expanded -->
-        <div
-          v-if="showApplications"
-          :class="
-            viewMode === 'list'
-              ? 'flex items-center gap-1 mb-2 flex-wrap'
-              : 'flex items-center gap-2 mb-3 flex-wrap'
-          "
-        >
-          <StatusPill
-            v-if="applicationStats.pending > 0"
-            status="pending"
-            :label="`${applicationStats.pending} ${$t('dashboard.pending')}`"
-          />
-          <StatusPill
-            v-if="applicationStats.selected > 0"
-            status="selected"
-            :label="`${applicationStats.selected} ${$t('dashboard.selected')}`"
-          />
-          <StatusPill
-            v-if="applicationStats.rejected > 0"
-            status="rejected"
-            :label="`${applicationStats.rejected} ${$t('dashboard.rejected')}`"
-          />
-        </div>
       </div>
     </template>
 

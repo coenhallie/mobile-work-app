@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full max-w-7xl mx-auto px-4 py-6 bg-gray-900 min-h-screen pb-32"
+    class="w-full max-w-7xl mx-auto px-4 py-6 bg-white dark:bg-gray-900 min-h-screen pb-32"
   >
     <!-- Header -->
     <div class="mb-6">
@@ -13,7 +13,10 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="text-center text-muted-foreground py-10">
+    <div
+      v-if="isLoading"
+      class="text-center text-gray-600 dark:text-gray-400 py-10"
+    >
       {{ $t('contractorProfile.loading') }}
     </div>
 
@@ -28,7 +31,7 @@
     <!-- Profile Display -->
     <div
       v-else-if="contractor"
-      class="bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg p-6"
+      class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6"
     >
       <div class="flex items-center mb-6">
         <!-- Profile Photo -->
@@ -36,7 +39,10 @@
           class="h-24 w-24 rounded-full bg-muted flex items-center justify-center overflow-hidden mr-4 ring-2 ring-border"
         >
           <!-- Show loading indicator while data is loading -->
-          <div v-if="!isLoaded" class="text-sm text-muted-foreground">
+          <div
+            v-if="!isLoaded"
+            class="text-sm text-gray-600 dark:text-gray-400"
+          >
             {{ $t('common.loading') }}
           </div>
           <!-- Show profile image if available -->
@@ -55,15 +61,15 @@
           <span v-else class="text-4xl">🧑‍🔧</span>
         </div>
         <div class="flex-1">
-          <h2 class="text-2xl font-semibold text-foreground mb-2">
+          <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
             {{ formatDisplayName(contractor.full_name) }}
           </h2>
           <!-- Skills -->
           <div class="mb-3">
-            <span class="text-sm font-medium text-foreground">{{
+            <span class="text-sm font-medium text-gray-900 dark:text-white">{{
               $t('contractorProfile.skills')
             }}</span>
-            <p class="text-muted-foreground text-sm">
+            <p class="text-gray-600 dark:text-gray-400 text-sm">
               {{
                 contractor.skills && contractor.skills.length > 0
                   ? contractor.skills.map(formatSkill).join(', ')
@@ -82,13 +88,16 @@
             </div>
             <div
               v-if="contractor.availability_message"
-              class="flex items-center text-muted-foreground"
+              class="flex items-center text-gray-600 dark:text-gray-400"
             >
               <span class="text-sm italic">{{
                 contractor.availability_message
               }}</span>
             </div>
-            <div v-else class="flex items-center text-muted-foreground">
+            <div
+              v-else
+              class="flex items-center text-gray-600 dark:text-gray-400"
+            >
               <span class="text-sm">{{
                 $t('contractorProfile.usuallyRespondsQuickly')
               }}</span>
@@ -99,10 +108,10 @@
 
       <!-- Bio Section -->
       <div v-if="contractor.bio" class="mb-6">
-        <h3 class="text-lg font-medium text-foreground mb-3">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
           {{ $t('contractorProfile.about') }}
         </h3>
-        <p class="text-foreground leading-relaxed">
+        <p class="text-gray-900 dark:text-white leading-relaxed">
           {{ contractor.bio }}
         </p>
       </div>
@@ -114,7 +123,7 @@
       >
         <div v-if="contractor.years_experience" class="flex items-center">
           <span class="text-blue-500 mr-2">📅</span>
-          <span class="text-sm text-muted-foreground">
+          <span class="text-sm text-gray-600 dark:text-gray-400">
             {{
               $t('contractorProfile.experience', {
                 years: contractor.years_experience,
@@ -124,7 +133,7 @@
         </div>
         <div v-if="contractor.district" class="flex items-center">
           <span class="text-red-500 mr-2">📍</span>
-          <span class="text-sm text-muted-foreground">
+          <span class="text-sm text-gray-600 dark:text-gray-400">
             {{ contractor.district }}
           </span>
         </div>
@@ -141,7 +150,7 @@
     <!-- Enhanced Sticky Contact Section -->
     <div
       v-if="contractor"
-      class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-gray-900 backdrop-blur-sm border-t border-border shadow-lg z-[90]"
+      class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-white dark:bg-gray-900 backdrop-blur-sm border-t border-border shadow-lg z-[90]"
     >
       <div class="max-w-6xl mx-auto p-4">
         <!-- Contact Success Feedback -->
@@ -215,7 +224,7 @@
 
         <!-- Contact Encouragement Text -->
         <div class="mt-2 text-center">
-          <p class="text-xs text-muted-foreground">
+          <p class="text-xs text-gray-600 dark:text-gray-400">
             {{ $t('contractorProfile.contactEncouragement') }}
           </p>
         </div>

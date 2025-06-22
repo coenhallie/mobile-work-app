@@ -1,302 +1,84 @@
 <template>
-  <div class="client-dashboard bg-white dark:bg-gray-900 min-h-screen">
-    <!-- Clean Header -->
-    <div class="px-3 pt-4 pb-3">
-      <div class="mb-6">
-        <button
-          @click="$router.push('/services')"
-          class="w-full bg-black dark:bg-white text-white dark:text-black px-6 py-4 rounded-lg font-medium text-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-        >
-          <Plus class="w-5 h-5 inline mr-2" />
-          {{ $t('clientDashboard.postJobButton') }}
-        </button>
+  <DashboardLayout
+    :primary-button-text="$t('clientDashboard.postJobButton')"
+    :primary-icon="Plus"
+    :stats="dashboardStats"
+    :active-view="activeView"
+    :view-title="getViewTitle()"
+    :view-mode="viewMode"
+    :has-active-filters="hasActiveFilters"
+    :active-filters-count="activeFiltersCount"
+    :is-loading="isLoading"
+    :items="activeView === 'applications' ? [] : filteredJobs"
+    :empty-state-title="getEmptyStateTitle()"
+    :empty-state-description="getEmptyStateDescription()"
+    :empty-action-text="$t('dashboard.postFirstJob')"
+    :empty-action-icon="Plus"
+    :has-more-items="hasMoreJobs"
+    :is-loading-more="isLoadingMore"
+    :loading-text="$t('common.loading')"
+    :load-more-text="$t('common.loadMore')"
+    :recent-activity="recentActivity"
+    :recent-activity-title="$t('dashboard.recentActivity')"
+    :format-activity-time="formatActivityTime"
+    @primary-action="$router.push('/services')"
+    @view-change="setActiveView"
+    @view-mode-change="viewMode = $event"
+    @filter-click="showFilterSheet = true"
+    @empty-action="$router.push('/services')"
+    @load-more="loadMoreJobs"
+  >
+    <!-- Custom content for applications view -->
+    <template #custom-content>
+      <div v-if="activeView === 'applications'">
+        <ApplicationsList
+          :applications="allApplications"
+          @select-applicant="selectApplicant"
+          @reject-applicant="rejectApplicant"
+          @send-message="sendMessageToContractor"
+        />
       </div>
+    </template>
 
-      <!-- Minimalist Stats -->
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <button
-          @click="setActiveView('all')"
-          class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors relative"
-          :class="{
-            'bg-gray-100 dark:bg-gray-700 ring-2 ring-blue-500':
-              activeView === 'all',
-          }"
-        >
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ totalJobsCount }}
-          </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {{ $t('clientDashboard.totalLabel') }}
-          </div>
-        </button>
+    <!-- Job Card Item Template -->
+    <template #item="{ item: job, viewMode }">
+      <ClientJobCard
+        :job="job"
+        :applications="job.applications || []"
+        :view-mode="viewMode"
+        @view-details="viewJobDetails"
+        @edit-job="editJob"
+        @view-applications="viewApplications"
+        @mark-completed="markJobCompleted"
+        @delete-job="deleteJob"
+        @view-applicant-details="viewApplicantDetails"
+        @select-contractor="selectContractor"
+        class="border-0 p-0 bg-transparent"
+      />
+    </template>
 
-        <button
-          @click="setActiveView('active')"
-          class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors relative"
-          :class="{
-            'bg-gray-100 dark:bg-gray-700 ring-2 ring-green-500':
-              activeView === 'active',
-          }"
-        >
-          <div class="text-2xl font-bold text-green-600">
-            {{ activeJobsCount }}
-          </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {{ $t('clientDashboard.activeLabel') }}
-          </div>
-        </button>
-
-        <button
-          @click="setActiveView('applications')"
-          class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors relative"
-          :class="{
-            'bg-gray-100 dark:bg-gray-700 ring-2 ring-blue-500':
-              activeView === 'applications',
-          }"
-        >
-          <div class="text-2xl font-bold text-blue-600">
-            {{ totalApplicationsCount }}
-          </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {{ $t('clientDashboard.applicationsLabel') }}
-          </div>
-        </button>
-
-        <button
-          @click="setActiveView('completed')"
-          class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors relative"
-          :class="{
-            'bg-gray-100 dark:bg-gray-700 ring-2 ring-gray-500':
-              activeView === 'completed',
-          }"
-        >
-          <div class="text-2xl font-bold text-gray-600">
-            {{ completedJobsCount }}
-          </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {{ $t('clientDashboard.doneLabel') }}
-          </div>
-        </button>
-      </div>
-    </div>
-
-    <!-- Clean Actions Bar -->
-    <div class="px-3 pb-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-normal text-gray-900 dark:text-white">
-          {{ getViewTitle() }}
-        </h2>
-        <div class="flex items-center gap-2">
-          <!-- Simple View Toggle -->
-          <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            <button
-              @click="viewMode = 'cards'"
-              :class="[
-                'px-3 py-1 rounded text-sm transition-colors',
-                viewMode === 'cards'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400',
-              ]"
-            >
-              <Grid3X3 class="w-4 h-4" />
-            </button>
-            <button
-              @click="viewMode = 'list'"
-              :class="[
-                'px-3 py-1 rounded text-sm transition-colors',
-                viewMode === 'list'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400',
-              ]"
-            >
-              <List class="w-4 h-4" />
-            </button>
-          </div>
-
-          <!-- Simple Filter -->
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                <Filter class="w-4 h-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem @click="sortBy = 'date'">
-                {{ $t('dashboard.sortByDate') }}
-              </DropdownMenuItem>
-              <DropdownMenuItem @click="sortBy = 'applications'">
-                {{ $t('dashboard.sortByApplications') }}
-              </DropdownMenuItem>
-              <DropdownMenuItem @click="sortBy = 'status'">
-                {{ $t('dashboard.sortByStatus') }}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="px-3">
-      <Transition name="fade" mode="out-in">
-        <div :key="activeView">
-          <!-- Loading State -->
-          <div v-if="isLoading" class="space-y-3">
-            <div v-for="i in 3" :key="i" class="animate-pulse">
-              <div class="bg-gray-100 dark:bg-gray-800 h-20 rounded-lg"></div>
-            </div>
-          </div>
-
-          <!-- Empty State -->
-          <div v-else-if="filteredJobs.length === 0" class="text-center py-16">
-            <div
-              class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4"
-            >
-              <Sparkles class="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              {{ getEmptyStateTitle() }}
-            </h3>
-            <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-              {{ getEmptyStateDescription() }}
-            </p>
-            <button
-              @click="$router.push('/services')"
-              class="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium text-sm hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-            >
-              <Plus class="w-4 h-4 inline mr-1" />
-              {{ $t('dashboard.postFirstJob') }}
-            </button>
-          </div>
-
-          <!-- Applications View -->
-          <div v-else-if="activeView === 'applications'">
-            <ApplicationsList
-              :applications="allApplications"
-              @select-applicant="selectApplicant"
-              @reject-applicant="rejectApplicant"
-              @send-message="sendMessageToContractor"
-            />
-          </div>
-
-          <!-- Jobs List -->
-          <div v-else>
-            <!-- Grid View (Cards) -->
-            <div v-if="viewMode === 'cards'" class="grid grid-cols-2 gap-2">
-              <div
-                v-for="job in filteredJobs"
-                :key="job.id"
-                class="border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-              >
-                <ClientJobCard
-                  :job="job"
-                  :applications="job.applications || []"
-                  :view-mode="viewMode"
-                  @view-details="viewJobDetails"
-                  @edit-job="editJob"
-                  @view-applications="viewApplications"
-                  @mark-completed="markJobCompleted"
-                  @delete-job="deleteJob"
-                  @view-applicant-details="viewApplicantDetails"
-                  @select-contractor="selectContractor"
-                  class="border-0 p-0 bg-transparent"
-                />
-              </div>
-            </div>
-
-            <!-- List View -->
-            <div v-else class="space-y-3">
-              <div
-                v-for="job in filteredJobs"
-                :key="job.id"
-                class="border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-              >
-                <ClientJobCard
-                  :job="job"
-                  :applications="job.applications || []"
-                  :view-mode="viewMode"
-                  @view-details="viewJobDetails"
-                  @edit-job="editJob"
-                  @view-applications="viewApplications"
-                  @mark-completed="markJobCompleted"
-                  @delete-job="deleteJob"
-                  @view-applicant-details="viewApplicantDetails"
-                  @select-contractor="selectContractor"
-                  class="border-0 p-0 bg-transparent"
-                />
-              </div>
-            </div>
-
-            <!-- Load More -->
-            <div v-if="hasMoreJobs" class="text-center pt-6">
-              <button
-                @click="loadMoreJobs"
-                :disabled="isLoadingMore"
-                class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm font-medium"
-              >
-                <div
-                  v-if="isLoadingMore"
-                  class="animate-spin w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full inline-block"
-                ></div>
-                {{
-                  isLoadingMore ? $t('common.loading') : $t('common.loadMore')
-                }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </div>
-
-    <!-- Recent Activity -->
-    <div v-if="recentActivity.length > 0" class="px-3 pt-6 pb-4">
-      <h3 class="text-lg font-normal text-gray-900 dark:text-white mb-4">
-        {{ $t('dashboard.recentActivity') }}
-      </h3>
-      <div class="space-y-3">
-        <div
-          v-for="activity in recentActivity.slice(0, 5)"
-          :key="activity.id"
-          class="flex items-center gap-3 text-sm py-2"
-        >
-          <div class="w-2 h-2 bg-gray-400 rounded-full flex-shrink-0"></div>
-          <span class="text-gray-500 dark:text-gray-400 text-xs">
-            {{ formatActivityTime(activity.created_at) }}
-          </span>
-          <span class="text-gray-900 dark:text-white">
-            {{ activity.description }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
+    <!-- Filter Bottom Sheet -->
+    <template #filter-sheet>
+      <JobFilterBottomSheet
+        v-model="showFilterSheet"
+        :current-sort="sortBy"
+        :current-view="activeView"
+        :current-statuses="selectedStatuses"
+        @apply-filters="handleApplyFilters"
+      />
+    </template>
+  </DashboardLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Plus,
-  Sparkles,
-  Activity,
-  Users,
-  CheckCircle,
-  Grid3X3,
-  List,
-  Filter,
-} from 'lucide-vue-next';
+import { Plus } from 'lucide-vue-next';
+import DashboardLayout from '../ui/DashboardLayout.vue';
 import ClientJobCard from './ClientJobCard.vue';
 import ApplicationsList from './ApplicationsList.vue';
+import JobFilterBottomSheet from './JobFilterBottomSheet.vue';
 import { useJobStore } from '@/stores/job';
 import { useJobApplicationsStore } from '@/stores/jobApplications';
 
@@ -315,6 +97,8 @@ const hasMoreJobs = ref(false);
 const recentActivity = ref([]);
 const jobApplicationsMap = ref(new Map());
 const allApplications = ref([]);
+const showFilterSheet = ref(false);
+const selectedStatuses = ref([]);
 
 // Props
 const props = defineProps({
@@ -349,21 +133,42 @@ const totalApplicationsCount = computed(() =>
 
 const filteredJobs = computed(() => {
   let filtered = [...jobsWithApplications.value];
+  console.log('Filtering jobs:', {
+    totalJobs: filtered.length,
+    activeView: activeView.value,
+    selectedStatuses: selectedStatuses.value,
+    sortBy: sortBy.value,
+  });
 
-  // Filter by active view
-  switch (activeView.value) {
-    case 'active':
-      filtered = filtered.filter((job) =>
-        ['open', 'in_progress'].includes(job.status)
-      );
-      break;
-    case 'completed':
-      filtered = filtered.filter((job) => job.status === 'completed');
-      break;
-    case 'applications':
-      filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
-      break;
-    // 'all' shows everything
+  // Apply status filter first if any specific statuses are selected
+  if (selectedStatuses.value.length > 0) {
+    filtered = filtered.filter((job) =>
+      selectedStatuses.value.includes(job.status)
+    );
+    console.log('After status filter:', filtered.length);
+  } else {
+    // Only apply view filter if no specific statuses are selected
+    switch (activeView.value) {
+      case 'active':
+        filtered = filtered.filter((job) =>
+          ['open', 'in_progress'].includes(job.status)
+        );
+        break;
+      case 'completed':
+        filtered = filtered.filter((job) => job.status === 'completed');
+        break;
+      case 'applications':
+        filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
+        break;
+      // 'all' shows everything
+    }
+    console.log('After view filter:', filtered.length);
+  }
+
+  // Apply applications filter for 'applications' view regardless of status
+  if (activeView.value === 'applications') {
+    filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
+    console.log('After applications filter:', filtered.length);
   }
 
   // Sort jobs
@@ -381,8 +186,58 @@ const filteredJobs = computed(() => {
       break;
   }
 
+  console.log('Final filtered jobs:', filtered.length);
   return filtered;
 });
+
+// Filter state computed properties
+const hasActiveFilters = computed(() => {
+  return (
+    selectedStatuses.value.length > 0 ||
+    sortBy.value !== 'date' ||
+    activeView.value !== 'all'
+  );
+});
+
+const activeFiltersCount = computed(() => {
+  let count = 0;
+  if (selectedStatuses.value.length > 0) count++;
+  if (sortBy.value !== 'date') count++;
+  if (activeView.value !== 'all') count++;
+  return count;
+});
+
+// Dashboard stats for the reusable component
+const dashboardStats = computed(() => [
+  {
+    key: 'all',
+    value: totalJobsCount.value,
+    label: t('clientDashboard.totalLabel'),
+    ringColor: 'blue',
+    valueColor: 'text-gray-900 dark:text-white',
+  },
+  {
+    key: 'active',
+    value: activeJobsCount.value,
+    label: t('clientDashboard.activeLabel'),
+    ringColor: 'green',
+    valueColor: 'text-green-600',
+  },
+  {
+    key: 'applications',
+    value: totalApplicationsCount.value,
+    label: t('clientDashboard.applicationsLabel'),
+    ringColor: 'blue',
+    valueColor: 'text-blue-600',
+  },
+  {
+    key: 'completed',
+    value: completedJobsCount.value,
+    label: t('clientDashboard.doneLabel'),
+    ringColor: 'gray',
+    valueColor: 'text-gray-600',
+  },
+]);
 
 // Methods
 const setActiveView = async (view) => {
@@ -589,6 +444,19 @@ const formatActivityTime = (timestamp) => {
   }
 };
 
+// Filter handling
+const handleApplyFilters = (filters) => {
+  console.log('Applying filters:', filters);
+  sortBy.value = filters.sort;
+  activeView.value = filters.view;
+  selectedStatuses.value = filters.statuses;
+  console.log('Updated state:', {
+    sortBy: sortBy.value,
+    activeView: activeView.value,
+    selectedStatuses: selectedStatuses.value,
+  });
+};
+
 // Lifecycle
 onMounted(async () => {
   isLoading.value = true;
@@ -607,6 +475,19 @@ watch(activeView, (newView) => {
     query: { ...router.currentRoute.value.query, view: newView },
   });
 });
+
+// Watch for filter changes
+watch(
+  [sortBy, activeView, selectedStatuses],
+  ([newSort, newView, newStatuses]) => {
+    console.log('Filter state changed:', {
+      sortBy: newSort,
+      activeView: newView,
+      selectedStatuses: newStatuses,
+    });
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>
