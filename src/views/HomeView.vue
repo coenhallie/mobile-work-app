@@ -169,192 +169,26 @@
         </div>
       </div>
 
-      <!-- Contractor View: Job Lists for Logged-In Contractors -->
-      <div v-if="isSignedIn && userRole === 'contractor'" class="mb-8">
-        <h2 class="text-xl md:text-2xl font-normal mb-6 text-foreground">
-          {{ $t('dashboard.jobDashboard') }}
-        </h2>
-
-        <!-- Contractor Dashboard Stats -->
-        <div class="dashboard-stats mb-8">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <!-- Total Earnings Card -->
+      <!-- Loading State: Show when user is signed in but role is not yet determined -->
+      <div v-if="isSignedIn && !userRole" class="mb-8">
+        <div class="flex items-center justify-center py-12">
+          <div class="text-center">
             <div
-              class="stat-card bg-card p-4 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-105"
-              :class="{
-                'ring-2 ring-primary bg-primary/5':
-                  activeContractorDashboardView === 'earnings',
-              }"
-              @click="handleContractorDashboardCardClick('earnings')"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="stat-number text-2xl font-bold text-primary">
-                    S/{{ contractorTotalEarnings.toLocaleString() }}
-                  </div>
-                  <div class="stat-label text-sm text-muted-foreground">
-                    {{ $t('dashboard.totalEarnings') }}
-                  </div>
-                </div>
-                <Wallet class="w-8 h-8 text-primary/60" />
-              </div>
-            </div>
-
-            <!-- Active Jobs Card -->
-            <div
-              class="stat-card bg-card p-4 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-105"
-              :class="{
-                'ring-2 ring-green-500 bg-green-500/5':
-                  activeContractorDashboardView === 'activeJobs',
-              }"
-              @click="handleContractorDashboardCardClick('activeJobs')"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="stat-number text-2xl font-bold text-green-600">
-                    {{ contractorActiveJobsCount }}
-                  </div>
-                  <div class="stat-label text-sm text-muted-foreground">
-                    {{ $t('dashboard.activeJobs') }}
-                  </div>
-                </div>
-                <Activity class="w-8 h-8 text-green-500/60" />
-              </div>
-            </div>
-
-            <!-- Success Rate Card -->
-            <div
-              class="stat-card bg-card p-4 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-105"
-              :class="{
-                'ring-2 ring-blue-500 bg-blue-500/5':
-                  activeContractorDashboardView === 'successRate',
-              }"
-              @click="handleContractorDashboardCardClick('successRate')"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="stat-number text-2xl font-bold text-blue-600">
-                    {{ contractorSuccessRate }}%
-                  </div>
-                  <div class="stat-label text-sm text-muted-foreground">
-                    {{ $t('dashboard.successRate') }}
-                  </div>
-                </div>
-                <Target class="w-8 h-8 text-blue-500/60" />
-              </div>
-            </div>
-
-            <!-- Available Opportunities Card -->
-            <div
-              class="stat-card bg-card p-4 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-105"
-              :class="{
-                'ring-2 ring-orange-500 bg-orange-500/5':
-                  activeContractorDashboardView === 'opportunities',
-              }"
-              @click="handleContractorDashboardCardClick('opportunities')"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="stat-number text-2xl font-bold text-orange-600">
-                    {{ contractorAvailableOpportunitiesCount }}
-                  </div>
-                  <div class="stat-label text-sm text-muted-foreground">
-                    {{ $t('dashboard.opportunities') }}
-                  </div>
-                </div>
-                <Sparkles class="w-8 h-8 text-orange-500/60" />
-              </div>
-            </div>
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"
+            ></div>
+            <div class="text-muted-foreground">Loading user profile...</div>
           </div>
-        </div>
-
-        <!-- Unified Job List Section for Contractor -->
-        <div>
-          <Transition name="fade" mode="out-in">
-            <div
-              :key="activeContractorDashboardView"
-              class="contractor-dashboard-content"
-            >
-              <div class="flex items-center mb-4">
-                <h3 class="text-lg font-medium text-foreground">
-                  {{ contractorDashboardTitle }}
-                </h3>
-                <!-- Loading indicator -->
-                <div
-                  v-if="
-                    refreshingContractorJobs ||
-                    refreshingOpenJobs ||
-                    isDashboardTransitioning
-                  "
-                  class="ml-2 animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full text-muted-foreground"
-                ></div>
-              </div>
-
-              <!-- Earnings View: Show Chart + Custom Job Cards -->
-              <div
-                v-if="activeContractorDashboardView === 'earnings'"
-                class="space-y-6"
-              >
-                <!-- Earnings Chart -->
-                <EarningsChart />
-
-                <!-- Completed Jobs with Earnings -->
-                <div>
-                  <h4 class="text-md font-medium text-foreground mb-4">
-                    {{
-                      $t('dashboard.completedJobsCount', {
-                        count: filteredContractorDisplayJobs.length,
-                      })
-                    }}
-                  </h4>
-
-                  <div
-                    v-if="filteredContractorDisplayJobs.length > 0"
-                    class="space-y-4"
-                  >
-                    <EarningsJobCard
-                      v-for="job in filteredContractorDisplayJobs"
-                      :key="job.id"
-                      :job="job"
-                      @view-details="viewJobDetails"
-                    />
-                  </div>
-
-                  <div v-else class="text-center py-8">
-                    <p class="text-muted-foreground">
-                      {{ getContractorEmptyMessage() }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Other Views: Use Regular Job List -->
-              <JobList
-                v-else
-                :jobs="filteredContractorDisplayJobs"
-                :loading="
-                  jobStore.isLoading &&
-                  filteredContractorDisplayJobs.length === 0
-                "
-                :error="jobStore.error"
-                :user-role="userRole"
-                :empty-message="getContractorEmptyMessage()"
-                :show-posted-by="true"
-                :show-assigned-to="false"
-                :show-actions="true"
-                @view="viewJobDetails"
-                @action="handleJobAction"
-                @applied="handleJobApplied"
-                @application-error="handleApplicationError"
-              />
-            </div>
-          </Transition>
         </div>
       </div>
 
       <!-- Client View: Enhanced Dashboard for Logged-In Clients -->
-      <div v-if="isSignedIn && userRole === 'client'" class="mb-8">
+      <div v-else-if="isSignedIn && userRole === 'client'" class="mb-8">
         <ClientDashboard :user-id="userId" />
+      </div>
+
+      <!-- Contractor View: Enhanced Dashboard for Logged-In Contractors -->
+      <div v-else-if="isSignedIn && userRole === 'contractor'" class="mb-8">
+        <ContractorDashboard :user-id="userId" />
       </div>
     </div>
     <!-- Client Onboarding Modal -->
@@ -385,17 +219,14 @@ import {
 import { useRouter } from 'vue-router';
 import { useJobStore, JOB_STATUS } from '../stores/job';
 import { useJobApplicationsStore } from '../stores/jobApplications';
-import JobList from '../components/jobs/JobList.vue';
 import Button from '../components/ui/button/Button.vue';
 import { Input } from '../components/ui/input';
 import { analyzeCategoryWithLLM } from '@/lib/categoryAnalyzer';
 import { formatDisplayName } from '@/lib/nameFormatter';
-import EarningsChart from '../components/charts/EarningsChart.vue';
-import EarningsJobCard from '../components/charts/EarningsJobCard.vue';
 import ClientOnboarding from '../components/onboarding/ClientOnboarding.vue';
 import ClientDashboard from '../components/client/ClientDashboard.vue';
+import ContractorDashboard from '../components/contractors/ContractorDashboard.vue';
 import { useSupabaseAuth } from '../composables/useSupabaseAuth';
-import { Wallet, Activity, Target, Sparkles } from 'lucide-vue-next';
 
 const router = useRouter();
 const auth = useAuth();
@@ -446,493 +277,14 @@ const {
 const isLoadingSupabaseProfile = ref(false);
 
 // Refreshing states for smooth loading indicators
-const refreshingContractorJobs = ref(false);
-const refreshingOpenJobs = ref(false);
 const refreshingUserJobs = ref(false);
 
 // Dashboard state for interactive cards
 const activeDashboardView = ref('all'); // 'all', 'active', 'applications', 'completed'
-// Contractor Dashboard State
-const activeContractorDashboardView = ref('activeJobs'); // 'earnings', 'activeJobs', 'successRate', 'opportunities'
 
 // Transition state for smooth fade effects
 const isDashboardTransitioning = ref(false);
-const TRANSITION_DURATION = 150; // ms
-const contractorProfile = ref(null); // To store contractor's profile including service_areas
 const jobApplicationsData = ref({});
-
-// Dummy completed jobs data for earnings demonstration
-const dummyCompletedJobs = ref([
-  {
-    id: 'demo-1',
-    category_name: 'Home Cleaning',
-    description:
-      'Deep cleaning of 3-bedroom house including kitchen, bathrooms, and living areas. Detailed cleaning of all surfaces, floors, and fixtures.',
-    location_text: 'Downtown Lima',
-    final_payment_amount: 4500,
-    completed_at: '2024-12-15T10:00:00Z',
-    client_name: 'Maria Rodriguez',
-    status: 'completed',
-  },
-  {
-    id: 'demo-2',
-    category_name: 'Plumbing Repair',
-    description:
-      'Fixed leaky kitchen faucet and replaced bathroom sink drain. Included parts and labor for complete repair.',
-    location_text: 'Miraflores',
-    final_payment_amount: 3200,
-    completed_at: '2024-11-28T14:30:00Z',
-    client_name: 'Carlos Mendoza',
-    status: 'completed',
-  },
-  {
-    id: 'demo-3',
-    category_name: 'Garden Maintenance',
-    description:
-      'Weekly garden maintenance including lawn mowing, hedge trimming, and flower bed weeding for residential property.',
-    location_text: 'San Isidro',
-    final_payment_amount: 2800,
-    completed_at: '2024-11-10T09:15:00Z',
-    client_name: 'Ana Silva',
-    status: 'completed',
-  },
-]);
-
-const openJobs = computed(() => jobStore.openJobs);
-const contractorJobs = computed(() => {
-  const jobs = jobStore.contractorJobs || [];
-
-  // Current jobs are those that are assigned, in progress, completed, etc.
-  // ALSO include jobs with 'open' status if the application is 'selected' (temporary fix)
-  const filtered = jobs.filter(
-    (job) =>
-      job.status === 'assigned' ||
-      job.status === 'in_progress' ||
-      job.status === 'completed' ||
-      job.status === 'in_review' ||
-      job.status === 'pending_assignment' ||
-      (job.status === 'open' && job.application_status === 'selected') // Temporary fix
-  );
-
-  return filtered;
-});
-
-// Contractor Stats
-const contractorTotalEarnings = computed(() => {
-  // Combine actual completed jobs with dummy data for demonstration
-  const actualEarnings = jobStore.contractorJobs
-    .filter(
-      (job) =>
-        job.status === JOB_STATUS.COMPLETED &&
-        typeof job.final_payment_amount === 'number'
-    )
-    .reduce((sum, job) => sum + job.final_payment_amount, 0);
-
-  // Add dummy earnings for demonstration
-  const dummyEarnings = dummyCompletedJobs.value.reduce(
-    (sum, job) => sum + job.final_payment_amount,
-    0
-  );
-
-  return actualEarnings + dummyEarnings;
-});
-
-const contractorActiveJobsCount = computed(() => contractorJobs.value.length);
-
-const contractorSuccessRate = computed(() => {
-  // Actual calculation: (completed jobs / (completed jobs + cancelled/failed jobs)) * 100
-  const completedJobs = jobStore.contractorJobs.filter(
-    (job) => job.status === JOB_STATUS.COMPLETED
-  ).length;
-  // Assuming JOB_STATUS.CANCELLED is a relevant failure/non-success status. Add others if needed.
-  const nonSuccessJobs = jobStore.contractorJobs.filter(
-    (job) => job.status === JOB_STATUS.CANCELLED
-  ).length;
-  const totalApplicableJobs = completedJobs + nonSuccessJobs;
-
-  if (totalApplicableJobs === 0) return 0; // Avoid division by zero
-  return Math.round((completedJobs / totalApplicableJobs) * 100);
-});
-
-// Helper function to filter opportunities based on contractor profile
-const getFilteredOpportunities = () => {
-  const contractorSkills = contractorProfile.value?.skills || [];
-  const contractorServiceAreas = contractorProfile.value?.service_areas || [];
-
-  let filteredJobs = openJobs.value;
-
-  // Filter by skills if contractor has skills defined
-  if (contractorSkills.length > 0) {
-    filteredJobs = filteredJobs.filter((job) => {
-      // Check main category match with improved partial matching
-      const categoryMatch = contractorSkills.some((skill) => {
-        const skillLower = skill.toLowerCase();
-        const categoryLower = job.category_name?.toLowerCase() || '';
-
-        // Extract base skill word (e.g., "Plumbing" from "Plumbing Fixes")
-        const baseSkill = skillLower.split(/[\s(]/)[0].trim();
-        const baseCategory = categoryLower.split(/[\s(]/)[0].trim();
-
-        return (
-          skillLower === categoryLower || // Exact match
-          skillLower.includes(categoryLower) || // Skill contains category
-          categoryLower.includes(skillLower) || // Category contains skill
-          baseSkill === baseCategory || // Base words match
-          skillLower.includes(baseCategory) || // Skill contains base category
-          categoryLower.includes(baseSkill) // Category contains base skill
-        );
-      });
-
-      // Check skills in description with improved partial matching
-      const descriptionMatch = contractorSkills.some((skill) => {
-        const skillLower = skill.toLowerCase();
-        const jobDescLower = job.description?.toLowerCase() || '';
-
-        // Extract base skill word (e.g., "Painting" from "Painting (Interior)")
-        const baseSkill = skillLower.split('(')[0].trim();
-
-        // Check if job description contains the skill or base skill
-        return (
-          jobDescLower.includes(skillLower) || // Full skill match
-          jobDescLower.includes(baseSkill) || // Base skill match
-          skillLower.includes(jobDescLower.replace(/[^a-z\s]/g, '').trim()) // Reverse match
-        );
-      });
-
-      // Check required_skills array with improved matching
-      const requiredSkillsMatch = contractorSkills.some((skill) =>
-        job.required_skills?.some((reqSkill) => {
-          const skillLower = skill.toLowerCase();
-          const reqSkillLower = reqSkill.toLowerCase();
-          // Use partial matching: check if either skill contains the other as a keyword
-          return (
-            skillLower === reqSkillLower || // Exact match
-            skillLower.includes(reqSkillLower) || // Contractor skill contains job requirement
-            reqSkillLower.includes(skillLower) // Job requirement contains contractor skill
-          );
-        })
-      );
-
-      // Check service_ids match (most reliable matching)
-      const serviceIdsMatch = contractorProfile.value?.service_ids?.some(
-        (serviceId) => job.service_id === serviceId
-      );
-
-      // Check service keywords match
-      const serviceKeywordsMatch = contractorSkills.some((skill) => {
-        const skillLower = skill.toLowerCase();
-        const baseSkill = skillLower.split(/[\s(]/)[0].trim();
-
-        return job.service_keywords?.some((keyword) => {
-          const keywordLower = keyword.toLowerCase();
-          return (
-            skillLower.includes(keywordLower) ||
-            keywordLower.includes(skillLower) ||
-            baseSkill.includes(keywordLower) ||
-            keywordLower.includes(baseSkill)
-          );
-        });
-      });
-
-      return (
-        categoryMatch ||
-        descriptionMatch ||
-        requiredSkillsMatch ||
-        serviceIdsMatch ||
-        serviceKeywordsMatch
-      );
-    });
-  }
-
-  // Filter by location/service areas if contractor has service areas defined
-  if (contractorServiceAreas.length > 0) {
-    filteredJobs = filteredJobs.filter((job) => {
-      // If job has no location specified, show it (could be remote/flexible)
-      if (!job.location_text) {
-        return true;
-      }
-
-      // Check if job location matches any of contractor's service areas
-      const jobLocation = job.location_text.toLowerCase();
-      const matchesServiceArea = contractorServiceAreas.some((area) => {
-        const serviceArea = area.toLowerCase();
-
-        // Extract location components (district, province, region)
-        const jobLocationParts = jobLocation
-          .split(/[,-]/)
-          .map((part) => part.trim());
-        const serviceAreaParts = serviceArea
-          .split('-')
-          .map((part) => part.trim());
-
-        // Check for exact matches or partial matches
-        return (
-          jobLocation.includes(serviceArea) ||
-          serviceArea.includes(jobLocation) ||
-          // Check if any job location part matches any service area part
-          jobLocationParts.some((jobPart) =>
-            serviceAreaParts.some(
-              (areaPart) =>
-                jobPart.includes(areaPart) || areaPart.includes(jobPart)
-            )
-          )
-        );
-      });
-
-      return matchesServiceArea;
-    });
-  }
-
-  return filteredJobs;
-};
-
-const contractorAvailableOpportunitiesCount = computed(() => {
-  return getFilteredOpportunities().length;
-});
-
-const handleContractorDashboardCardClick = async (view) => {
-  if (
-    isDashboardTransitioning.value ||
-    activeContractorDashboardView.value === view
-  ) {
-    return; // Prevent multiple rapid clicks or clicking the same view
-  }
-
-  isDashboardTransitioning.value = true;
-
-  // Small delay to allow fade-out to start
-  await nextTick();
-  setTimeout(() => {
-    activeContractorDashboardView.value = view;
-    // Allow fade-in to complete
-    setTimeout(() => {
-      isDashboardTransitioning.value = false;
-    }, TRANSITION_DURATION);
-  }, TRANSITION_DURATION);
-};
-
-const contractorDashboardTitle = computed(() => {
-  switch (activeContractorDashboardView.value) {
-    case 'earnings':
-      return (
-        t('dashboard.completedJobs') + ' (' + t('dashboard.totalEarnings') + ')'
-      );
-    case 'activeJobs':
-      return t('dashboard.currentJobs');
-    case 'successRate':
-      return t('dashboard.applicationHistory');
-    case 'opportunities':
-      return t('dashboard.availableOpportunities');
-    default:
-      return t('jobs.myJobs');
-  }
-});
-
-const filteredContractorDisplayJobs = computed(() => {
-  const view = activeContractorDashboardView.value;
-  if (view === 'activeJobs') {
-    return contractorJobs.value; // Already filtered for active statuses
-  }
-  if (view === 'opportunities') {
-    // Add null check to prevent uninitialized variable errors
-    if (!contractorProfile.value) {
-      return [];
-    }
-
-    const contractorSkills = contractorProfile.value?.skills || [];
-    const contractorServiceAreas = contractorProfile.value?.service_areas || [];
-
-    console.log('[DEBUG] Filtering opportunities for contractor:', {
-      contractorId: contractorProfile.value?.id,
-      skills: contractorSkills,
-      serviceIds: contractorProfile.value?.service_ids || [],
-      serviceAreas: contractorServiceAreas.slice(0, 5), // Show first 5 for brevity
-      totalServiceAreas: contractorServiceAreas.length,
-      totalJobs: openJobs.value.length,
-    });
-
-    let filteredJobs = openJobs.value;
-
-    // Filter by skills if contractor has skills defined
-    if (contractorSkills.length > 0) {
-      filteredJobs = filteredJobs.filter((job) => {
-        // Check main category match with improved partial matching
-        const categoryMatch = contractorSkills.some((skill) => {
-          const skillLower = skill.toLowerCase();
-          const categoryLower = job.category_name?.toLowerCase() || '';
-
-          // Extract base skill word (e.g., "Plumbing" from "Plumbing Fixes")
-          const baseSkill = skillLower.split(/[\s(]/)[0].trim();
-          const baseCategory = categoryLower.split(/[\s(]/)[0].trim();
-
-          return (
-            skillLower === categoryLower || // Exact match
-            skillLower.includes(categoryLower) || // Skill contains category
-            categoryLower.includes(skillLower) || // Category contains skill
-            baseSkill === baseCategory || // Base words match
-            skillLower.includes(baseCategory) || // Skill contains base category
-            categoryLower.includes(baseSkill) // Category contains base skill
-          );
-        });
-
-        // Check skills in description with improved partial matching
-        const descriptionMatch = contractorSkills.some((skill) => {
-          const skillLower = skill.toLowerCase();
-          const jobDescLower = job.description?.toLowerCase() || '';
-
-          // Extract base skill word (e.g., "Painting" from "Painting (Interior)")
-          const baseSkill = skillLower.split('(')[0].trim();
-
-          // Check if job description contains the skill or base skill
-          return (
-            jobDescLower.includes(skillLower) || // Full skill match
-            jobDescLower.includes(baseSkill) || // Base skill match
-            skillLower.includes(jobDescLower.replace(/[^a-z\s]/g, '').trim()) // Reverse match
-          );
-        });
-
-        // Check required_skills array with improved matching
-        const requiredSkillsMatch = contractorSkills.some((skill) =>
-          job.required_skills?.some((reqSkill) => {
-            const skillLower = skill.toLowerCase();
-            const reqSkillLower = reqSkill.toLowerCase();
-            // Use partial matching: check if either skill contains the other as a keyword
-            return (
-              skillLower === reqSkillLower || // Exact match
-              skillLower.includes(reqSkillLower) || // Contractor skill contains job requirement
-              reqSkillLower.includes(skillLower) // Job requirement contains contractor skill
-            );
-          })
-        );
-
-        // Check service_ids match (most reliable matching)
-        const serviceIdsMatch =
-          contractorProfile.value?.service_ids?.length > 0 &&
-          contractorProfile.value.service_ids.some(
-            (serviceId) => job.service_id === serviceId
-          );
-
-        // Check service keywords match
-        const serviceKeywordsMatch = contractorSkills.some((skill) => {
-          const skillLower = skill.toLowerCase();
-          const baseSkill = skillLower.split(/[\s(]/)[0].trim();
-
-          return (
-            job.service_keywords?.length > 0 &&
-            job.service_keywords.some((keyword) => {
-              const keywordLower = keyword.toLowerCase();
-              return (
-                skillLower.includes(keywordLower) ||
-                keywordLower.includes(skillLower) ||
-                baseSkill.includes(keywordLower) ||
-                keywordLower.includes(baseSkill)
-              );
-            })
-          );
-        });
-
-        const matches =
-          categoryMatch ||
-          descriptionMatch ||
-          requiredSkillsMatch ||
-          serviceIdsMatch ||
-          serviceKeywordsMatch;
-
-        // Debug logging for the painting job
-        if (job.description?.toLowerCase().includes('paint')) {
-          console.log('[DEBUG] Painting job filtering:', {
-            jobId: job.id,
-            jobCategory: job.category_name,
-            jobDescription: job.description,
-            contractorSkills,
-            categoryMatch,
-            descriptionMatch,
-            requiredSkillsMatch,
-            finalMatch: matches,
-          });
-        }
-
-        return matches;
-      });
-    }
-
-    // Filter by location/service areas if contractor has service areas defined
-    if (contractorServiceAreas.length > 0) {
-      filteredJobs = filteredJobs.filter((job) => {
-        // If job has no location specified, show it (could be remote/flexible)
-        if (!job.location_text) {
-          console.log('[DEBUG] Job has no location, including:', job.id);
-          return true;
-        }
-
-        // Check if job location matches any of contractor's service areas
-        const jobLocation = job.location_text.toLowerCase();
-        const matchesServiceArea = contractorServiceAreas.some((area) => {
-          const serviceArea = area.toLowerCase();
-
-          // Extract location components (district, province, region)
-          const jobLocationParts = jobLocation
-            .split(/[,-]/)
-            .map((part) => part.trim());
-          const serviceAreaParts = serviceArea
-            .split('-')
-            .map((part) => part.trim());
-
-          // Check for exact matches or partial matches
-          const matches =
-            jobLocation.includes(serviceArea) ||
-            serviceArea.includes(jobLocation) ||
-            // Check if any job location part matches any service area part
-            jobLocationParts.some((jobPart) =>
-              serviceAreaParts.some(
-                (areaPart) =>
-                  jobPart.includes(areaPart) || areaPart.includes(jobPart)
-              )
-            );
-
-          if (matches) {
-            console.log('[DEBUG] Location match found:', {
-              jobLocation,
-              serviceArea,
-              jobLocationParts,
-              serviceAreaParts,
-            });
-          }
-          return matches;
-        });
-
-        if (!matchesServiceArea) {
-          console.log('[DEBUG] Job filtered out by location:', {
-            jobId: job.id,
-            jobLocation: job.location_text,
-            contractorServiceAreas,
-          });
-        }
-
-        return matchesServiceArea;
-      });
-    }
-
-    console.log('[DEBUG] Final filtered jobs count:', filteredJobs.length);
-    return filteredJobs;
-  }
-  if (view === 'earnings') {
-    // Combine actual completed jobs with dummy data for demonstration
-    const actualCompletedJobs = jobStore.contractorJobs.filter(
-      (job) => job.status === JOB_STATUS.COMPLETED
-    );
-    return [...actualCompletedJobs, ...dummyCompletedJobs.value];
-  }
-  if (view === 'successRate') {
-    // For now, let's show completed jobs. This can be refined.
-    // Or, if jobApplicationsStore is available and populated for contractors,
-    // we could show jobs they've applied to.
-    return jobStore.contractorJobs.filter(
-      (job) => job.status === JOB_STATUS.COMPLETED
-    );
-  }
-  return []; // Default to empty if no view matches
-});
 
 const userJobs = computed(() => jobStore.userJobs);
 
@@ -1023,7 +375,7 @@ const isSearching = ref(false);
 const showFallbackContent = ref(false);
 const supabaseRef = shallowRef(null);
 
-const userRole = computed(() => authUserRoleGet.value || 'client'); // Use role from auth composable, default to 'client'
+const userRole = computed(() => authUserRoleGet.value); // Use role from auth composable, no fallback
 
 const initSupabase = async () => {
   try {
@@ -1131,7 +483,7 @@ const fetchUserData = async () => {
     updateProfileImage(null);
     return;
   }
-  const currentUserId = user.value.id; // Renamed for clarity
+  const currentUserId = user.value.id;
   isLoadingSupabaseProfile.value = true;
   try {
     const supabase = await getSupabase();
@@ -1140,42 +492,40 @@ const fetchUserData = async () => {
     let nameToSet = null;
     let imageUrlToSet = null;
 
-    // Try contractor_profiles first
-    const { data: contractorData, error: contractorError } = await supabase
-      .from('contractor_profiles')
-      .select(
-        'full_name, profile_picture_url, service_areas, bio, contact_phone, skills'
-      ) // Include service_areas and skills for filtering
-      .eq('user_id', currentUserId)
-      .maybeSingle();
+    // Load profile data based on user role
+    try {
+      if (userRole.value === 'client') {
+        const { data: clientData, error: clientError } = await supabase
+          .from('client_profiles')
+          .select('full_name, display_name, profile_picture_url')
+          .eq('id', currentUserId)
+          .maybeSingle();
 
-    if (contractorData && !contractorError) {
-      nameToSet = contractorData.full_name;
-      imageUrlToSet = contractorData.profile_picture_url;
+        if (clientData && !clientError) {
+          nameToSet = clientData.full_name || clientData.display_name;
+          imageUrlToSet = clientData.profile_picture_url;
+        } else if (clientError) {
+          console.warn('[HOME] Client profile query error:', clientError);
+        }
+      } else if (userRole.value === 'contractor') {
+        const { data: contractorData, error: contractorError } = await supabase
+          .from('contractor_profiles')
+          .select('full_name, display_name, profile_picture_url')
+          .eq('user_id', currentUserId)
+          .maybeSingle();
 
-      contractorProfile.value = {
-        ...contractorData,
-        skills: contractorData.skills || [], // Use skills array directly
-      };
-
-      console.log('[DEBUG] Contractor profile loaded:', {
-        name: contractorData.full_name,
-        serviceAreas: contractorData.service_areas,
-        skills: contractorData.skills || [],
-      });
-    } else {
-      contractorProfile.value = null; // Clear if not found or error
-      // Fallback to client_profiles
-      const { data: clientData, error: clientError } = await supabase
-        .from('client_profiles')
-        .select('full_name, display_name, profile_picture_url') // Ensure using profile_picture_url
-        .eq('id', currentUserId)
-        .single();
-
-      if (clientData && !clientError) {
-        nameToSet = clientData.full_name || clientData.display_name;
-        imageUrlToSet = clientData.profile_picture_url;
+        if (contractorData && !contractorError) {
+          nameToSet = contractorData.full_name || contractorData.display_name;
+          imageUrlToSet = contractorData.profile_picture_url;
+        } else if (contractorError) {
+          console.warn(
+            '[HOME] Contractor profile query error:',
+            contractorError
+          );
+        }
       }
+    } catch (profileError) {
+      console.warn('[HOME] Profile loading error:', profileError);
     }
 
     // If no profile data from tables, use user metadata or email as fallback for name
@@ -1188,24 +538,10 @@ const fetchUserData = async () => {
 
     // Update global state
     updateProfileName(nameToSet);
-    updateProfileImage(imageUrlToSet || null); // Pass null if no image_url
+    updateProfileImage(imageUrlToSet || null);
 
-    if (userRole.value === 'contractor') {
-      // Use refreshing states if we already have data
-      const hasContractorJobs = contractorJobs.value.length > 0;
-      const hasOpenJobs = openJobs.value.length > 0;
-
-      if (hasContractorJobs) refreshingContractorJobs.value = true;
-      if (hasOpenJobs) refreshingOpenJobs.value = true;
-
-      try {
-        await jobStore.fetchContractorJobs(user.value.id);
-        await jobStore.fetchOpenJobs();
-      } finally {
-        refreshingContractorJobs.value = false;
-        refreshingOpenJobs.value = false;
-      }
-    } else if (userRole.value === 'client') {
+    // Load client jobs if user is a client
+    if (userRole.value === 'client') {
       const hasUserJobs = userJobs.value.length > 0;
       if (hasUserJobs) refreshingUserJobs.value = true;
 
@@ -1213,6 +549,16 @@ const fetchUserData = async () => {
         await jobStore.fetchJobsByUser(user.value.id);
       } finally {
         refreshingUserJobs.value = false;
+      }
+    }
+
+    // Load contractor jobs if user is a contractor
+    if (userRole.value === 'contractor') {
+      try {
+        await jobStore.fetchContractorJobs(user.value.id);
+        await jobStore.fetchOpenJobs(); // Also fetch available opportunities
+      } catch (error) {
+        console.error('[HOME] Error fetching contractor jobs:', error);
       }
     }
   } catch (err) {
@@ -1231,8 +577,6 @@ const initializeUserData = async () => {
     updateProfileName(null);
     updateProfileImage(null);
     jobStore.clearUserJobs();
-    jobStore.clearContractorJobs();
-    contractorProfile.value = null; // Clear contractor profile on sign out
   }
 };
 
@@ -1281,9 +625,14 @@ onMounted(() => {
         // Force fetch jobs if user is signed in
         if (isSignedIn.value && user.value?.id) {
           try {
-            await jobStore.fetchJobsByUser(user.value.id);
-            // Check if client needs onboarding
-            await checkClientOnboarding();
+            if (userRole.value === 'client') {
+              await jobStore.fetchJobsByUser(user.value.id);
+              // Check if client needs onboarding
+              await checkClientOnboarding();
+            } else if (userRole.value === 'contractor') {
+              await jobStore.fetchContractorJobs(user.value.id);
+              await jobStore.fetchOpenJobs();
+            }
           } catch (error) {
             console.error('[HOME] Error fetching jobs on mount:', error);
           }
@@ -1457,26 +806,6 @@ const getEmptyMessage = () => {
     case 'all':
     default:
       return t('dashboard.emptyStates.noJobsPosted');
-  }
-};
-
-const getContractorEmptyMessage = () => {
-  switch (activeContractorDashboardView.value) {
-    case 'earnings':
-      return t('dashboard.emptyStates.noEarningsYet');
-    case 'activeJobs':
-      return t('dashboard.emptyStates.noActiveJobsContractor');
-    case 'successRate':
-      return t('dashboard.emptyStates.noJobHistory');
-    case 'opportunities':
-      const contractorSkills = contractorProfile.value?.skills || [];
-
-      if (contractorSkills.length > 0) {
-        return t('dashboard.emptyStates.noMatchingJobs');
-      }
-      return t('dashboard.emptyStates.completeProfileForOpportunities');
-    default:
-      return t('dashboard.emptyStates.noJobsToDisplay');
   }
 };
 

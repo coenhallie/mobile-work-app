@@ -3,7 +3,7 @@
     :job="job"
     :card-class="[
       'onboarding-job-card group', // Added group for hover effect
-      'bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200',
+      'bg-transparent rounded-xl px-4 pb-4 pt-2 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200',
     ]"
     @click="$emit('click')"
   >
@@ -25,7 +25,11 @@
               >
                 {{ job.title }}
               </h3>
-              <StatusPill v-if="job.isUrgent" status="urgent" label="Urgent" />
+              <StatusBadge
+                v-if="job.isUrgent"
+                status="urgent"
+                custom-label="Urgent"
+              />
             </div>
           </div>
           <!-- Budget -->
@@ -105,7 +109,7 @@
 import { formatRelativeTime } from '@/lib/timeUtils';
 import JobLocationDisplay from '@/components/shared/JobLocationDisplay.vue';
 import BaseJobCard from '@/components/shared/BaseJobCard.vue';
-import StatusPill from '@/components/shared/StatusPill.vue';
+import StatusBadge from '@/components/shared/StatusBadge.vue';
 
 // Props
 const props = defineProps({

@@ -21,28 +21,21 @@
     :recent-activity="recentActivity"
     :recent-activity-title="$t('dashboard.recentActivity')"
     :format-activity-time="formatActivityTime"
-    @primary-action="$router.push('/')"
+    @primary-action="$router.push('/find-contractor')"
     @view-change="setActiveView"
     @view-mode-change="viewMode = $event"
     @filter-click="showFilterSheet = true"
-    @empty-action="$router.push('/')"
+    @empty-action="$router.push('/find-contractor')"
     @load-more="loadMoreJobs"
   >
     <!-- Job Card Item Template -->
     <template #item="{ item: job, viewMode }">
-      <ClientJobCard
+      <ContractorJobCard
         :job="job"
-        :applications="job.applications || []"
         :view-mode="viewMode"
-        :user-role="'contractor'"
         @view-details="viewJobDetails"
-        @edit-job="editJob"
-        @view-applications="viewApplications"
+        @apply-job="applyToJob"
         @mark-completed="markJobCompleted"
-        @delete-job="deleteJob"
-        @view-applicant-details="viewApplicantDetails"
-        @select-contractor="selectContractor"
-        class="border-0 p-0 bg-transparent"
       />
     </template>
 
@@ -65,7 +58,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Search } from 'lucide-vue-next';
 import DashboardLayout from '../ui/DashboardLayout.vue';
-import ClientJobCard from '../client/ClientJobCard.vue';
+import ContractorJobCard from './ContractorJobCard.vue';
 import JobFilterBottomSheet from '../client/JobFilterBottomSheet.vue';
 import { useJobStore } from '@/stores/job';
 import { useJobApplicationsStore } from '@/stores/jobApplications';
@@ -95,18 +88,18 @@ const props = defineProps({
 });
 
 // Computed properties
-const contractorJobs = computed(() => jobStore.contractorJobs || []);
-const availableJobs = computed(() => jobStore.jobs || []);
+const contractorJobs = computed(() => {
+  return jobStore.contractorJobs || [];
+});
+const availableJobs = computed(() => {
+  return jobStore.openJobs || [];
+});
 
 // Combine contractor jobs and available opportunities
 const allJobs = computed(() => {
   const myJobs = contractorJobs.value.map((job) => ({ ...job, isMyJob: true }));
   const opportunities = availableJobs.value
-    .filter(
-      (job) =>
-        job.status === 'open' &&
-        !contractorJobs.value.find((cj) => cj.id === job.id)
-    )
+    .filter((job) => !contractorJobs.value.find((cj) => cj.id === job.id))
     .map((job) => ({ ...job, isMyJob: false }));
 
   return [...myJobs, ...opportunities];
@@ -122,9 +115,7 @@ const activeJobsCount = computed(
 const completedJobsCount = computed(
   () => contractorJobs.value.filter((job) => job.status === 'completed').length
 );
-const opportunitiesCount = computed(
-  () => availableJobs.value.filter((job) => job.status === 'open').length
-);
+const opportunitiesCount = computed(() => availableJobs.value.length);
 
 const filteredJobs = computed(() => {
   let filtered = [...allJobs.value];
@@ -142,11 +133,12 @@ const filteredJobs = computed(() => {
       );
       break;
     case 'opportunities':
-      filtered = filtered.filter(
-        (job) => !job.isMyJob && job.status === 'open'
-      );
+      filtered = filtered.filter((job) => !job.isMyJob);
       break;
-    // 'all' shows everything
+    case 'all':
+    default:
+      // 'all' shows everything - no additional filtering needed
+      break;
   }
 
   // Apply status filter if any specific statuses are selected
@@ -249,7 +241,7 @@ const loadContractorJobs = async () => {
 const loadAvailableJobs = async () => {
   try {
     isLoading.value = true;
-    await jobStore.fetchJobs();
+    await jobStore.fetchOpenJobs();
   } catch (error) {
     console.error('Error loading available jobs:', error);
   } finally {
@@ -302,7 +294,7 @@ const loadMoreJobs = async () => {
   isLoadingMore.value = true;
   try {
     if (activeView.value === 'opportunities') {
-      await jobStore.fetchJobs();
+      await jobStore.fetchOpenJobs();
     } else {
       await jobStore.fetchContractorJobs(props.userId);
     }
@@ -317,14 +309,15 @@ const viewJobDetails = (job) => {
   router.push(`/jobs/${job.id}`);
 };
 
-const editJob = (job) => {
-  // For contractors, this could redirect to job details or be disabled
-  router.push(`/jobs/${job.id}`);
-};
-
-const viewApplications = (job) => {
-  // For contractors, this could show their application status
-  router.push(`/jobs/${job.id}`);
+const applyToJob = async (job) => {
+  try {
+    // Apply to the job through the job applications store
+    await jobApplicationsStore.applyToJob(job.id, props.userId);
+    // Refresh the available jobs to update application status
+    await loadAvailableJobs();
+  } catch (error) {
+    console.error('Error applying to job:', error);
+  }
 };
 
 const markJobCompleted = async (job) => {
@@ -334,21 +327,6 @@ const markJobCompleted = async (job) => {
   } catch (error) {
     console.error('Error marking job complete:', error);
   }
-};
-
-const deleteJob = (job) => {
-  // For contractors, this would not be available
-  console.log('Delete not available for contractors');
-};
-
-const viewApplicantDetails = (applicant) => {
-  // For contractors, this would not be available
-  console.log('View applicant details not available for contractors');
-};
-
-const selectContractor = (applicant) => {
-  // For contractors, this would not be available
-  console.log('Select contractor not available for contractors');
 };
 
 const handleApplyFilters = (filters) => {

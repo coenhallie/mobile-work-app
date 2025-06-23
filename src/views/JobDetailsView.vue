@@ -1128,7 +1128,7 @@ const handleConfirmCancel = async () => {
 
 // Determine where the back link should go
 const backLink = computed(() => {
-  return userRole.value === 'contractor' ? '/contractor-dashboard' : '/';
+  return userRole.value === 'contractor' ? '/home' : '/';
 });
 
 // Check if the current user is the job owner

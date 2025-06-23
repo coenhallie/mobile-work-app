@@ -571,7 +571,7 @@
     </div>
 
     <!-- Enhanced Sign Up Modal -->
-    <EnhancedSignupModal
+    <SignupModal
       :show="showEnhancedSignUp"
       @close="showEnhancedSignUp = false"
       @success="handleSignUpSuccess"
@@ -669,7 +669,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSupabaseAuth } from '@/composables/useSupabaseAuth';
-import EnhancedSignupModal from '@/components/auth/EnhancedSignupModal.vue';
+import SignupModal from '@/components/auth/SignupModal.vue';
 
 const router = useRouter();
 const route = useRoute();

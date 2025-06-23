@@ -31,33 +31,28 @@
           </button>
         </div>
 
-        <!-- Custom Content Slot (e.g., Applications View) -->
-        <div v-else-if="$slots.custom">
-          <slot name="custom" />
-        </div>
-
         <!-- Items List -->
         <div v-else>
           <!-- Grid View (Cards) -->
-          <div v-if="viewMode === 'cards'" class="grid grid-cols-2 gap-2">
-            <div
+          <div v-if="viewMode === 'cards'" class="grid grid-cols-2 gap-3">
+            <slot
+              name="item"
               v-for="item in items"
               :key="item.id"
-              class="border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-            >
-              <slot name="item" :item="item" :view-mode="viewMode" />
-            </div>
+              :item="item"
+              :view-mode="viewMode"
+            />
           </div>
 
           <!-- List View -->
           <div v-else class="space-y-3">
-            <div
+            <slot
+              name="item"
               v-for="item in items"
               :key="item.id"
-              class="border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-            >
-              <slot name="item" :item="item" :view-mode="viewMode" />
-            </div>
+              :item="item"
+              :view-mode="viewMode"
+            />
           </div>
 
           <!-- Load More -->
@@ -83,7 +78,7 @@
 <script setup>
 import { Sparkles } from 'lucide-vue-next';
 
-defineProps({
+const props = defineProps({
   activeView: {
     type: String,
     required: true,
@@ -114,7 +109,7 @@ defineProps({
     required: true,
   },
   emptyActionIcon: {
-    type: [String, Object],
+    type: [String, Object, Function],
     required: true,
   },
   hasMoreItems: {

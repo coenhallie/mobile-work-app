@@ -1811,7 +1811,7 @@ const submitProfile = async () => {
     if (redirectJobId) {
       router.push({ name: 'JobDetails', params: { jobId: redirectJobId } });
     } else {
-      router.push('/contractor-dashboard'); // Default redirect
+      router.push('/home'); // Default redirect
     }
   } catch (error) {
     console.error('Error submitting profile:', error);

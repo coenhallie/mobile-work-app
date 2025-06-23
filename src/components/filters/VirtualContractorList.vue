@@ -23,7 +23,7 @@
           :contractor="contractor"
           @click="$emit('contractor-selected', contractor)"
         />
-        <ContractorCardSkeleton v-else />
+        <BaseSkeleton v-else layout="card" />
       </div>
 
       <!-- Spacer for items after visible range -->
@@ -45,7 +45,7 @@
           class="contractor-item"
           :style="{ height: `${itemHeight}px` }"
         >
-          <ContractorCardSkeleton />
+          <BaseSkeleton layout="card" />
         </div>
       </div>
 
@@ -85,8 +85,8 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import ContractorCard from './ContractorCard.vue';
-import ContractorCardSkeleton from './ContractorCardSkeleton.vue';
+import ContractorCard from '@/components/shared/ContractorCard.vue';
+import BaseSkeleton from '@/components/shared/BaseSkeleton.vue';
 
 const props = defineProps({
   items: { type: Array, default: () => [] },

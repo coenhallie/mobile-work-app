@@ -44,9 +44,10 @@
         <!-- Show either contractor cards OR skeleton cards, never both -->
         <template v-if="isLoading && contractors.length === 0">
           <!-- Loading Skeletons -->
-          <ContractorCardSkeleton
+          <BaseSkeleton
             v-for="n in skeletonCount"
             :key="`skeleton-${n}`"
+            layout="card"
           />
         </template>
         <template v-else-if="!isLoading && contractors.length > 0">
@@ -97,8 +98,8 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import ContractorCard from '@/components/contractors/ContractorCard.vue';
-import ContractorCardSkeleton from '@/components/contractors/ContractorCardSkeleton.vue';
+import ContractorCard from '@/components/shared/ContractorCard.vue';
+import BaseSkeleton from '@/components/shared/BaseSkeleton.vue';
 import ContractorSearch from '@/components/contractors/ContractorSearch.vue';
 import ContractorFilters from '@/components/contractors/ContractorFilters.vue';
 import InfiniteScrollContainer from '@/components/contractors/InfiniteScrollContainer.vue';

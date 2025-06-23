@@ -2,7 +2,7 @@
   <BaseJobCard
     :job="job"
     :card-class="[
-      'client-job-card group overflow-hidden', // Added group for hover effects and overflow-hidden for image
+      'contractor-job-card group overflow-hidden',
       job.status === 'completed' ? 'opacity-75' : '',
       viewMode === 'list'
         ? 'rounded-lg shadow-sm hover:shadow-md'
@@ -78,6 +78,13 @@
         :label="getStatusLabel(job.status)"
         class="m-2"
       />
+      <!-- Show "My Job" indicator for contractor's own jobs -->
+      <StatusBadge
+        v-if="job.isMyJob"
+        status="assigned"
+        :label="$t('contractorDashboard.myJob')"
+        class="m-2 mt-8"
+      />
     </template>
 
     <template #quick-actions>
@@ -93,44 +100,22 @@
             {{ $t('common.viewDetails') }}
           </DropdownMenuItem>
           <DropdownMenuItem
-            v-if="job.status !== 'completed'"
-            @click.stop="$emit('edit-job', job)"
+            v-if="!job.isMyJob"
+            @click.stop="$emit('apply-job', job)"
           >
-            <Edit class="w-4 h-4 mr-2" />
-            {{ $t('common.edit') }}
+            <Send class="w-4 h-4 mr-2" />
+            {{ $t('contractorDashboard.applyNow') }}
           </DropdownMenuItem>
           <DropdownMenuItem
-            v-if="(job.applicant_count || 0) > 0"
-            @click.stop="$emit('view-applications', job)"
-          >
-            <Users class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.viewApplications') }}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator
-            v-if="job.status === 'in_progress'"
-            class="my-0"
-          />
-          <DropdownMenuItem
-            v-if="job.status === 'in_progress'"
+            v-if="job.isMyJob && job.status === 'in_progress'"
             @click.stop="$emit('mark-completed', job)"
           >
             <CheckCircle class="w-4 h-4 mr-2" />
             {{ $t('dashboard.markCompleted') }}
           </DropdownMenuItem>
-          <DropdownMenuSeparator class="my-0" />
-          <DropdownMenuItem
-            @click.stop="$emit('delete-job', job)"
-            class="text-destructive focus:text-destructive"
-          >
-            <Trash2 class="w-4 h-4 mr-2" />
-            {{ $t('common.delete') }}
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </template>
-
-    <!-- Content below the image header starts here -->
-    <!-- The p-4 on card-class provides overall padding. Specific margins (mt-*) are for inter-element spacing -->
 
     <template #description>
       <p
@@ -162,7 +147,10 @@
           />
           <span>{{ formatStandardDate(job.created_at) }}</span>
         </div>
-        <div class="flex items-center whitespace-nowrap min-w-0">
+        <div
+          v-if="!job.isMyJob"
+          class="flex items-center whitespace-nowrap min-w-0"
+        >
           <Users
             :class="[viewMode === 'cards' ? 'w-4 h-4' : 'w-4 h-4', 'mr-1.5']"
           />
@@ -188,104 +176,53 @@
     </template>
 
     <template #content-extra>
-      <!-- This section is client-specific, styled to fit -->
-      <!-- Applications Summary -->
-      <div v-if="(job.applicant_count || 0) > 0" class="mt-3">
-        <!-- View Applications Button -->
-        <div class="mb-2" @click.stop>
-          <button
-            @click="toggleApplicationsView"
-            class="text-xs text-primary hover:underline flex items-center p-0 m-0 bg-transparent border-none cursor-pointer"
+      <!-- Client Information for opportunities -->
+      <div v-if="!job.isMyJob && job.client_name" class="mt-3">
+        <div class="flex items-center space-x-2 text-sm text-gray-500">
+          <div
+            class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center"
           >
-            {{
-              showApplications
-                ? $t('dashboard.hideApplications')
-                : $t('dashboard.viewApplications')
-            }}
-            ({{ job.applicant_count || 0 }})
-            <ChevronDown
-              :class="[
-                'w-3 h-3 ml-1 transition-transform duration-200',
-                showApplications ? 'rotate-180' : '',
-              ]"
-            />
-          </button>
-        </div>
-
-        <!-- Expandable Applications Section -->
-        <Transition
-          name="slide-down"
-          enter-active-class="transition-all duration-300 ease-out"
-          enter-from-class="opacity-0 max-h-0 overflow-hidden"
-          enter-to-class="opacity-100 max-h-96 overflow-hidden"
-          leave-active-class="transition-all duration-300 ease-in"
-          leave-from-class="opacity-100 max-h-96 overflow-hidden"
-          leave-to-class="opacity-0 max-h-0 overflow-hidden"
-        >
-          <div v-if="showApplications" class="space-y-2 mb-3" @click.stop>
-            <!-- Show up to 3 compact applicant cards -->
-            <div v-if="applications.length > 0" class="space-y-2">
-              <CompactApplicantCard
-                v-for="applicant in applications.slice(0, 3)"
-                :key="applicant.id"
-                :applicant="applicant"
-                @view-details="$emit('view-applicant-details', applicant)"
-                @select-contractor="$emit('select-contractor', applicant)"
-              />
-            </div>
-
-            <!-- Show "View All" button if there are more than 3 applications -->
-            <div
-              v-if="applications.length > 3"
-              class="flex items-center justify-center pt-2"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                @click.stop="$emit('view-applications', job)"
-                class="text-xs h-7 px-3"
-              >
-                {{ $t('dashboard.viewAll') }} {{ applications.length }}
-                {{ $t('dashboard.applicationCount.plural') }}
-                <ChevronRight class="w-3 h-3 ml-1" />
-              </Button>
-            </div>
+            <User class="w-3 h-3 text-gray-500" />
           </div>
-        </Transition>
+          <span>{{ job.client_name || $t('contractorDashboard.client') }}</span>
+        </div>
       </div>
     </template>
 
     <template #actions>
-      <div class="flex items-center justify-end pb-1">
-        <div class="flex items-center gap-2">
+      <div class="flex items-center justify-between pt-1">
+        <!-- Apply button for opportunities -->
+        <div v-if="!job.isMyJob" class="flex items-center gap-2">
           <Button
-            v-if="job.status === 'open' && (job.applicant_count || 0) === 0"
+            variant="default"
+            size="sm"
+            @click.stop="$emit('apply-job', job)"
+            class="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700"
+          >
+            <Send class="w-3 h-3 mr-1.5" />
+            {{ $t('contractorDashboard.applyNow') }}
+          </Button>
+        </div>
+
+        <!-- Status info for contractor's jobs -->
+        <div v-else class="flex items-center gap-2">
+          <Button
+            v-if="job.status === 'in_progress'"
             variant="outline"
             size="sm"
-            @click.stop="$emit('edit-job', job)"
+            @click.stop="$emit('mark-completed', job)"
             class="h-8 px-3 text-xs"
           >
-            <Edit class="w-3 h-3 mr-1.5" />
-            {{ $t('common.edit') }}
+            <CheckCircle class="w-3 h-3 mr-1.5" />
+            {{ $t('dashboard.markCompleted') }}
           </Button>
-          <!-- Fallback "View Details" button removed as the card itself is clickable -->
         </div>
       </div>
     </template>
-
-    <!-- Bulk Message Modal (remains unchanged) -->
-    <BulkMessageModal
-      v-if="showBulkMessage"
-      :job="job"
-      :applications="applications"
-      @close="showBulkMessage = false"
-      @sent="handleMessageSent"
-    />
   </BaseJobCard>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseJobCard from '@/components/shared/BaseJobCard.vue';
 import { Button } from '@/components/ui/button';
@@ -293,30 +230,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
   MoreVertical,
   Eye,
-  Edit,
-  Users,
+  Send,
   CheckCircle,
-  Trash2,
   Calendar,
-  ChevronRight,
-  ChevronDown,
-  // MessageCircle, // Not used directly in template after changes
-  // Briefcase, // Not used
+  Users,
+  User,
 } from 'lucide-vue-next';
 import JobImageCarousel from '@/components/jobs/JobImageCarousel.vue';
-import BulkMessageModal from './BulkMessageModal.vue';
 import JobLocationDisplay from '@/components/shared/JobLocationDisplay.vue';
 import StatusBadge from '@/components/shared/StatusBadge.vue';
-import CompactApplicantCard from './CompactApplicantCard.vue';
-import { formatStandardDate, formatStandardDateTime } from '@/lib/timeUtils';
-// Card import is no longer needed as BaseJobCard uses it internally
-// import { Card } from '@/components/ui/card';
+import { formatStandardDate } from '@/lib/timeUtils';
 
 const { t } = useI18n();
 
@@ -325,60 +253,13 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  applications: {
-    type: Array,
-    default: () => [],
-  },
-  // viewMode is no longer used for styling the card itself as much
   viewMode: {
     type: String,
     default: 'cards',
   },
 });
 
-const emit = defineEmits([
-  'view-details',
-  'edit-job',
-  'view-applications',
-  'mark-completed',
-  'delete-job',
-  'view-applicant-details',
-  'select-contractor',
-]);
-
-const showBulkMessage = ref(false);
-const showApplications = ref(false);
-
-// Computed properties
-const applicationStats = computed(() => {
-  const stats = {
-    pending: 0,
-    selected: 0,
-    rejected: 0,
-  };
-
-  props.applications.forEach((app) => {
-    if (app.status === 'selected') stats.selected++;
-    else if (app.status === 'rejected') stats.rejected++;
-    else stats.pending++;
-  });
-
-  return stats;
-});
-
-// openBulkMessage is not called from the template anymore, can be removed if not used elsewhere
-// const openBulkMessage = () => {
-//   showBulkMessage.value = true;
-// };
-
-const handleMessageSent = () => {
-  showBulkMessage.value = false;
-  // Could emit an event to refresh data or show success message
-};
-
-const toggleApplicationsView = () => {
-  showApplications.value = !showApplications.value;
-};
+const emit = defineEmits(['view-details', 'apply-job', 'mark-completed']);
 
 // Method to get translated status labels
 const getStatusLabel = (status) => {
@@ -399,25 +280,14 @@ const getStatusLabel = (status) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis; /* Added for better truncation */
+  text-overflow: ellipsis;
 }
 
-/* Ensure the carousel image takes the full width of the card header, breaking out of p-4 */
-/* This is achieved by adding negative margins to the JobImageCarousel class prop */
-/* .rounded-t-xl.-mx-4.-mt-4 for the carousel */
-
-/* Hover effect is now primarily handled by BaseJobCard or specific overrides if needed */
-/* .client-job-card:hover { ... } */
-
 /* Ensure dropdown trigger is visible on image */
-/* These styles might need to be adjusted if they conflict with BaseJobCard or applied more locally if still needed */
 .bg-card\/80 {
-  /* More generic selector if this style is for the trigger */
   background-color: hsla(var(--card), 0.8);
 }
 .hover\:bg-card:hover {
-  /* Ensure specificity if needed */
-  /* More generic selector */
   background-color: hsl(var(--card));
 }
 </style>

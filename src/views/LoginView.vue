@@ -507,9 +507,16 @@ const handleEmailLogin = async () => {
 
     if (result.success) {
       successMessage.value = 'Successfully signed in!';
-      // Redirect will be handled by router guard
-      setTimeout(() => {
-        router.push('/');
+      // Redirect based on user role
+      setTimeout(async () => {
+        const { getUserRole } = await import('@/router/index.js');
+        const userRole = await getUserRole();
+
+        if (userRole === 'contractor') {
+          router.push('/home');
+        } else {
+          router.push('/');
+        }
       }, 1000);
     } else {
       error.value = result.error || 'Failed to sign in';
@@ -570,8 +577,15 @@ const verifyPhoneOtp = async () => {
 
     if (data.user) {
       successMessage.value = 'Successfully signed in!';
-      setTimeout(() => {
-        router.push('/');
+      setTimeout(async () => {
+        const { getUserRole } = await import('@/router/index.js');
+        const userRole = await getUserRole();
+
+        if (userRole === 'contractor') {
+          router.push('/home');
+        } else {
+          router.push('/');
+        }
       }, 1000);
     }
   } catch (err) {

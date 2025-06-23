@@ -1,6 +1,20 @@
 <template>
+  <!-- Loading State -->
+  <BaseSkeleton
+    v-if="loading"
+    layout="card"
+    :show-avatar="true"
+    :show-title="true"
+    :show-subtitle="true"
+    :description-lines="2"
+    :footer-elements="3"
+    :show-action="true"
+  />
+
+  <!-- Contractor Card Content -->
   <article
-    class="contractor-card bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-700"
+    v-else
+    class="contractor-card bg-transparent rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-700"
     @click="$emit('click', contractor)"
     role="button"
     :aria-label="`View ${contractor.name}'s contractor profile`"
@@ -8,8 +22,8 @@
     @keydown.enter="$emit('click', contractor)"
     @keydown.space.prevent="$emit('click', contractor)"
   >
-    <!-- New Header Section -->
-    <div class="flex items-start space-x-4 p-4">
+    <!-- Header Section -->
+    <div class="flex items-start space-x-4 p-4 pb-2">
       <!-- Profile Image -->
       <img
         v-if="contractor.profileImageUrl"
@@ -74,7 +88,7 @@
     </div>
 
     <!-- Card Content -->
-    <div class="p-4">
+    <div class="px-4 pb-4">
       <!-- Rating and Location -->
       <div class="flex items-center justify-between mb-2">
         <div
@@ -148,7 +162,7 @@
           {{ skill }}
         </span>
         <span
-          v-if="contractor.skills.length > maxSkills"
+          v-if="contractor.skills && contractor.skills.length > maxSkills"
           class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-lg font-medium"
         >
           +{{ contractor.skills.length - maxSkills }}
@@ -169,11 +183,16 @@ import { useGeolocation } from '@/composables/useGeolocation';
 import { useFavoriteContractors } from '@/composables/useFavoriteContractors';
 import { useGlobalNotifications } from '@/composables/useUnifiedNotifications';
 import { useI18n } from 'vue-i18n';
+import BaseSkeleton from './BaseSkeleton.vue';
 
 const props = defineProps({
   contractor: {
     type: Object,
     required: true,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -183,7 +202,7 @@ const { formatDistance: formatDistanceUtil } = useGeolocation();
 const {
   isFavorited: isContractorFavorited,
   toggleFavorite: toggleContractorFavorite,
-  operationError: favoriteOperationError, // Get the error state
+  operationError: favoriteOperationError,
 } = useFavoriteContractors();
 
 const { sendNotification } = useGlobalNotifications();
@@ -305,7 +324,7 @@ const toggleFavorite = async () => {
         : t('notifications.addedToFavorites', {
             name: props.contractor.name,
           }),
-      type: 'success', // Assuming your notification system supports types
+      type: 'success',
     });
   } else {
     sendNotification({

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-3 pt-4 pb-3">
+  <div class="px-3 pb-3">
     <div class="mb-6">
       <button
         @click="$emit('primary-action')"
@@ -35,7 +35,7 @@ defineProps({
     required: true,
   },
   primaryIcon: {
-    type: [String, Object],
+    type: [String, Object, Function],
     required: true,
   },
   stats: {

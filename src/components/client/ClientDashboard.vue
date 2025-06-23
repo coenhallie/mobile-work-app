@@ -1,5 +1,52 @@
 <template>
+  <!-- Applications View - Completely separate layout -->
+  <div
+    v-if="activeView === 'applications'"
+    class="client-dashboard bg-white dark:bg-gray-900 min-h-screen"
+  >
+    <!-- Dashboard Header for Applications View -->
+    <DashboardHeader
+      :primary-button-text="$t('clientDashboard.postJobButton')"
+      :primary-icon="Plus"
+      :stats="dashboardStats"
+      :active-view="activeView"
+      @primary-action="$router.push('/services')"
+      @view-change="setActiveView"
+    />
+
+    <!-- Actions Bar for Applications View -->
+    <DashboardActionsBar
+      :title="getViewTitle()"
+      :view-mode="viewMode"
+      :has-active-filters="hasActiveFilters"
+      :active-filters-count="activeFiltersCount"
+      @view-mode-change="viewMode = $event"
+      @filter-click="showFilterSheet = true"
+    />
+
+    <!-- Applications List Content -->
+    <div class="px-3 pb-4">
+      <ApplicationsList
+        :applications="allApplications"
+        @select-applicant="selectApplicant"
+        @reject-applicant="rejectApplicant"
+        @send-message="sendMessageToContractor"
+      />
+    </div>
+
+    <!-- Filter Bottom Sheet for Applications -->
+    <JobFilterBottomSheet
+      v-model="showFilterSheet"
+      :current-sort="sortBy"
+      :current-view="activeView"
+      :current-statuses="selectedStatuses"
+      @apply-filters="handleApplyFilters"
+    />
+  </div>
+
+  <!-- Regular Dashboard Layout for other views -->
   <DashboardLayout
+    v-else
     :primary-button-text="$t('clientDashboard.postJobButton')"
     :primary-icon="Plus"
     :stats="dashboardStats"
@@ -9,7 +56,7 @@
     :has-active-filters="hasActiveFilters"
     :active-filters-count="activeFiltersCount"
     :is-loading="isLoading"
-    :items="activeView === 'applications' ? [] : filteredJobs"
+    :items="filteredJobs"
     :empty-state-title="getEmptyStateTitle()"
     :empty-state-description="getEmptyStateDescription()"
     :empty-action-text="$t('dashboard.postFirstJob')"
@@ -28,18 +75,6 @@
     @empty-action="$router.push('/services')"
     @load-more="loadMoreJobs"
   >
-    <!-- Custom content for applications view -->
-    <template #custom-content>
-      <div v-if="activeView === 'applications'">
-        <ApplicationsList
-          :applications="allApplications"
-          @select-applicant="selectApplicant"
-          @reject-applicant="rejectApplicant"
-          @send-message="sendMessageToContractor"
-        />
-      </div>
-    </template>
-
     <!-- Job Card Item Template -->
     <template #item="{ item: job, viewMode }">
       <ClientJobCard
@@ -53,7 +88,6 @@
         @delete-job="deleteJob"
         @view-applicant-details="viewApplicantDetails"
         @select-contractor="selectContractor"
-        class="border-0 p-0 bg-transparent"
       />
     </template>
 
@@ -76,6 +110,8 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Plus } from 'lucide-vue-next';
 import DashboardLayout from '../ui/DashboardLayout.vue';
+import DashboardHeader from '../ui/DashboardHeader.vue';
+import DashboardActionsBar from '../ui/DashboardActionsBar.vue';
 import ClientJobCard from './ClientJobCard.vue';
 import ApplicationsList from './ApplicationsList.vue';
 import JobFilterBottomSheet from './JobFilterBottomSheet.vue';
@@ -109,13 +145,16 @@ const props = defineProps({
 });
 
 // Computed properties
-const jobs = computed(() => jobStore.userJobs || []);
+const jobs = computed(() => {
+  return jobStore.userJobs || [];
+});
 
 const jobsWithApplications = computed(() => {
-  return jobs.value.map((job) => ({
+  const result = jobs.value.map((job) => ({
     ...job,
     applications: jobApplicationsMap.value.get(job.id) || [],
   }));
+  return result;
 });
 
 const totalJobsCount = computed(() => jobs.value.length);
@@ -133,42 +172,32 @@ const totalApplicationsCount = computed(() =>
 
 const filteredJobs = computed(() => {
   let filtered = [...jobsWithApplications.value];
-  console.log('Filtering jobs:', {
-    totalJobs: filtered.length,
-    activeView: activeView.value,
-    selectedStatuses: selectedStatuses.value,
-    sortBy: sortBy.value,
-  });
 
-  // Apply status filter first if any specific statuses are selected
+  // First apply view filter
+  switch (activeView.value) {
+    case 'active':
+      filtered = filtered.filter((job) =>
+        ['open', 'in_progress', 'assigned'].includes(job.status)
+      );
+      break;
+    case 'completed':
+      filtered = filtered.filter((job) => job.status === 'completed');
+      break;
+    case 'applications':
+      // For applications view, show jobs that have applications
+      filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
+      break;
+    case 'all':
+    default:
+      // 'all' shows everything - no additional filtering needed
+      break;
+  }
+
+  // Then apply status filter if any specific statuses are selected
   if (selectedStatuses.value.length > 0) {
     filtered = filtered.filter((job) =>
       selectedStatuses.value.includes(job.status)
     );
-    console.log('After status filter:', filtered.length);
-  } else {
-    // Only apply view filter if no specific statuses are selected
-    switch (activeView.value) {
-      case 'active':
-        filtered = filtered.filter((job) =>
-          ['open', 'in_progress'].includes(job.status)
-        );
-        break;
-      case 'completed':
-        filtered = filtered.filter((job) => job.status === 'completed');
-        break;
-      case 'applications':
-        filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
-        break;
-      // 'all' shows everything
-    }
-    console.log('After view filter:', filtered.length);
-  }
-
-  // Apply applications filter for 'applications' view regardless of status
-  if (activeView.value === 'applications') {
-    filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
-    console.log('After applications filter:', filtered.length);
   }
 
   // Sort jobs
@@ -186,7 +215,6 @@ const filteredJobs = computed(() => {
       break;
   }
 
-  console.log('Final filtered jobs:', filtered.length);
   return filtered;
 });
 
@@ -446,15 +474,9 @@ const formatActivityTime = (timestamp) => {
 
 // Filter handling
 const handleApplyFilters = (filters) => {
-  console.log('Applying filters:', filters);
   sortBy.value = filters.sort;
   activeView.value = filters.view;
   selectedStatuses.value = filters.statuses;
-  console.log('Updated state:', {
-    sortBy: sortBy.value,
-    activeView: activeView.value,
-    selectedStatuses: selectedStatuses.value,
-  });
 };
 
 // Lifecycle
@@ -462,15 +484,21 @@ onMounted(async () => {
   isLoading.value = true;
   try {
     await jobStore.fetchJobsByUser(props.userId);
+
     // Fetch applications for jobs that have applications
     await fetchApplicationsForJobsWithApplications();
+  } catch (error) {
+    console.error('Error in ClientDashboard onMounted:', error);
   } finally {
     isLoading.value = false;
   }
 });
 
-// Watch for view changes to update URL
+// Watch for view changes to update URL and clear status filters
 watch(activeView, (newView) => {
+  // Clear status filters when view changes
+  selectedStatuses.value = [];
+
   router.replace({
     query: { ...router.currentRoute.value.query, view: newView },
   });

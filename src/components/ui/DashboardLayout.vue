@@ -37,11 +37,6 @@
       @empty-action="$emit('empty-action')"
       @load-more="$emit('load-more')"
     >
-      <!-- Custom content slot (e.g., for applications view) -->
-      <template #custom>
-        <slot name="custom-content" />
-      </template>
-
       <!-- Item slot for rendering individual items -->
       <template #item="{ item, viewMode }">
         <slot name="item" :item="item" :view-mode="viewMode" />
@@ -87,7 +82,7 @@ defineProps({
     required: true,
   },
   primaryIcon: {
-    type: [String, Object],
+    type: [String, Object, Function],
     required: true,
   },
   stats: {
@@ -139,7 +134,7 @@ defineProps({
     required: true,
   },
   emptyActionIcon: {
-    type: [String, Object],
+    type: [String, Object, Function],
     required: true,
   },
   hasMoreItems: {

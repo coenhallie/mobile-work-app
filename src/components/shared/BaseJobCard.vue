@@ -1,7 +1,7 @@
 <template>
   <Card
     :class="[
-      'base-job-card overflow-hidden bg-card transition-all duration-200',
+      'base-job-card overflow-hidden bg-transparent transition-all duration-200 p-0',
       clickable ? 'cursor-pointer hover:shadow-lg hover:border-primary/20' : '',
       cardClass,
     ]"
@@ -82,7 +82,7 @@ const props = defineProps({
   },
   cardClass: {
     type: [String, Array, Object],
-    default: 'p-3 border border-border', // Tighter padding for modern app design
+    default: 'p-0 border border-border', // Remove default padding to prevent py-6 from Card component
   },
   contentClass: {
     type: [String, Array, Object],

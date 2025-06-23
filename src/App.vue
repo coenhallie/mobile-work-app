@@ -91,7 +91,6 @@ const routeHierarchy = {
   EditJob: 2,
   FindContractor: 1,
   JobDetails: 2,
-  ContractorDashboard: 0,
   ContractorProfile: 2,
   UserProfile: 1,
   CompleteProfile: 1,
@@ -103,13 +102,7 @@ const routeHierarchy = {
 };
 
 // Tab navigation routes (should use fade transition)
-const tabRoutes = [
-  'Home',
-  'ServiceCategories',
-  'ContractorDashboard',
-  'Messages',
-  'UserProfile',
-];
+const tabRoutes = ['Home', 'ServiceCategories', 'Messages', 'UserProfile'];
 
 // Determine transition direction based on route hierarchy
 const getTransitionName = (to, from) => {

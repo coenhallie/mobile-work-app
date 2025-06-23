@@ -92,7 +92,7 @@
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
       >
         <div v-for="i in 8" :key="`skeleton-${i}`">
-          <CategoryCardSkeleton />
+          <BaseSkeleton layout="category" />
         </div>
       </div>
 
@@ -229,9 +229,7 @@ import ServiceBottomSheetFilter from '@/components/filters/ServiceFilterBottomSh
 const CategoryCard = defineAsyncComponent(
   () => import('@/components/services/CategoryCard.vue')
 );
-const CategoryCardSkeleton = defineAsyncComponent(
-  () => import('@/components/services/CategoryCardSkeleton.vue')
-);
+import BaseSkeleton from '@/components/shared/BaseSkeleton.vue';
 const ServiceCard = defineAsyncComponent(
   () => import('@/components/services/ServiceCard.vue')
 );

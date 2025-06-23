@@ -84,7 +84,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
-import BottomSheet from '@/components/ui/BottomSheet.vue';
+import BottomSheet from '@/components/ui/BottomSheet/BottomSheet.vue';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },

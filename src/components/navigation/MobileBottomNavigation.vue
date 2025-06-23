@@ -78,9 +78,6 @@ const navItems = computed(() => {
       );
     }
 
-    // Note: Dashboard functionality has been integrated into HomeView for contractors
-    // No separate dashboard menu item needed
-
     // Common items for authenticated users
     items.push(
       { name: t('navigation.messages'), path: '/messages', icon: 'messages' },

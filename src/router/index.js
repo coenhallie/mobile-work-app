@@ -83,12 +83,6 @@ const routes = [
     meta: { requiresAuth: true, roles: ['client'] }, // Requires auth + client role
   },
   {
-    path: '/contractor-dashboard',
-    name: 'ContractorDashboard',
-    redirect: '/', // Redirect to home since functionality is integrated there
-    meta: { requiresAuth: true, roles: ['contractor'] },
-  },
-  {
     path: '/find-contractor',
     name: 'FindContractor',
     component: () => import('../views/ContractorListView.vue'),
@@ -258,7 +252,7 @@ async function isUserAuthenticated() {
 /**
  * Get user role from Supabase user metadata
  */
-async function getUserRole() {
+export async function getUserRole() {
   try {
     const {
       data: { session },

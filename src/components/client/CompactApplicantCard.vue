@@ -1,6 +1,6 @@
 <template>
   <div
-    class="compact-applicant-card bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+    class="compact-applicant-card bg-transparent rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
     @click="$emit('view-details', applicant)"
   >
     <!-- Header with Avatar and Name -->
@@ -50,8 +50,9 @@
       </div>
 
       <!-- Status Badge -->
-      <ApplicationStatusBadge
+      <StatusBadge
         :status="applicant.status"
+        type="application"
         size="sm"
         class="text-xs"
       />
@@ -118,7 +119,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import { User, Star, Eye, Check, CheckCircle } from 'lucide-vue-next';
-import ApplicationStatusBadge from './ApplicationStatusBadge.vue';
+import StatusBadge from '@/components/shared/StatusBadge.vue';
 import { formatStandardDate } from '@/lib/timeUtils';
 
 const { t } = useI18n();

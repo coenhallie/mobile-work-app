@@ -1,5 +1,5 @@
 <template>
-  <div class="enhanced-search-input">
+  <div class="search-input">
     <div class="search-container" ref="searchContainer">
       <div class="relative">
         <Search
@@ -507,7 +507,7 @@ onUnmounted(() => {
 <style scoped>
 @reference "@/style.css";
 
-.enhanced-search-input {
+.search-input {
   @apply relative;
 }
 

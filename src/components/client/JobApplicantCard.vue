@@ -1,6 +1,6 @@
 <template>
   <div
-    class="enhanced-applicant-card bg-card rounded-lg border transition-all duration-200 hover:shadow-lg flex gap-x-4 p-4"
+    class="applicant-card bg-transparent rounded-lg border transition-all duration-200 hover:shadow-lg flex gap-x-4 p-4"
   >
     <!-- Contractor Avatar -->
     <div class="relative flex-shrink-0">
@@ -99,7 +99,7 @@
               {{ $t('dashboard.appliedOn') }}
               {{ formatDate(applicant.created_at) }}
             </span>
-            <ApplicationStatusBadge :status="applicant.status" />
+            <StatusBadge :status="applicant.status" type="application" />
           </div>
         </div>
 
@@ -311,7 +311,7 @@ import {
   Clock,
   BarChart3,
 } from 'lucide-vue-next';
-import ApplicationStatusBadge from './ApplicationStatusBadge.vue';
+import StatusBadge from '@/components/shared/StatusBadge.vue';
 import ImageModal from '@/components/ui/ImageModal.vue';
 import { useChatStore } from '@/stores/chat';
 import { formatDisplayName } from '@/lib/nameFormatter';
@@ -431,11 +431,11 @@ const viewAllSamples = () => {
 </script>
 
 <style scoped>
-.enhanced-applicant-card {
+.applicant-card {
   transition: all 0.2s ease;
 }
 
-.enhanced-applicant-card:hover {
+.applicant-card:hover {
   transform: translateY(-2px);
 }
 </style>

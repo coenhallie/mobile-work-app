@@ -30,14 +30,14 @@
       <article
         v-for="application in filteredApplications"
         :key="application.id"
-        class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-700 hover:transform hover:-translate-y-0.5"
+        class="bg-transparent rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-700 hover:transform hover:-translate-y-0.5"
         @click="viewContractorProfile(application.contractor.userId)"
         role="button"
         :aria-label="`View ${application.contractor.fullName}'s application`"
         tabindex="0"
       >
         <!-- Header Section -->
-        <div class="flex items-start space-x-4 p-4">
+        <div class="flex items-start space-x-4 p-4 pb-2">
           <!-- Profile Image -->
           <div class="relative">
             <img
@@ -75,12 +75,12 @@
 
           <!-- Status Badge -->
           <div class="shrink-0">
-            <ApplicationStatusBadge :status="application.status" />
+            <StatusBadge :status="application.status" type="application" />
           </div>
         </div>
 
         <!-- Card Content -->
-        <div class="p-4">
+        <div class="px-4 pb-4">
           <!-- Rating and Applied Time -->
           <div class="flex items-center justify-between mb-2">
             <div
@@ -227,7 +227,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
-import ApplicationStatusBadge from './ApplicationStatusBadge.vue';
+import StatusBadge from '@/components/shared/StatusBadge.vue';
 import {
   Star,
   User,
