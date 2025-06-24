@@ -191,9 +191,21 @@ export const useJobStore = defineStore('job', () => {
     console.log(`[JobStore] Fetching job with ID: ${jobId}`);
 
     return executeWithAuth(async (supabase) => {
+      // Enhanced query to include contractor information when assigned
       const { data, error: fetchError } = await supabase
         .from('job_postings')
-        .select('*')
+        .select(
+          `
+          *,
+          contractor_profiles (
+            full_name,
+            bio,
+            profile_picture_url,
+            skills,
+            average_rating
+          )
+        `
+        )
         .eq('id', jobId)
         .single();
 
@@ -220,12 +232,12 @@ export const useJobStore = defineStore('job', () => {
       // Process image URLs and applicant count
       const processedJob = {
         ...data,
-        // Assuming photos are the correct field, not image_urls, based on job_postings table
         photos:
           data.photos?.map((url) =>
             processSupabaseImageUrl(url, { bucketName: 'job-images' })
           ) || [],
         applicant_count: applicantCount || 0,
+        assignedContractor: data.contractor_profiles,
       };
 
       currentJob.value = processedJob;
@@ -233,7 +245,10 @@ export const useJobStore = defineStore('job', () => {
       // Use category_name for logging as 'title' does not exist on job_postings
       console.log(
         '[JobStore] Successfully fetched job:',
-        processedJob.category_name
+        processedJob.category_name,
+        processedJob.assignedContractor
+          ? 'with assigned contractor'
+          : 'without assigned contractor'
       );
       return processedJob;
     }, false); // Don't require auth for fetching individual jobs (public data)

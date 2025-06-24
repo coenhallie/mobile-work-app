@@ -13,7 +13,7 @@
 
   <!-- Contractor Card Content -->
   <article
-    v-else
+    v-else-if="contractor"
     class="contractor-card bg-transparent rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-700"
     @click="$emit('click', contractor)"
     role="button"
@@ -27,7 +27,11 @@
       <!-- Profile Image -->
       <img
         v-if="contractor.profileImageUrl"
-        :src="contractor.profileImageUrl"
+        :src="
+          Array.isArray(contractor.profileImageUrl)
+            ? contractor.profileImageUrl[0]
+            : contractor.profileImageUrl
+        "
         :alt="`${contractor.name}'s profile picture`"
         class="w-14 h-14 rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0"
         loading="lazy"

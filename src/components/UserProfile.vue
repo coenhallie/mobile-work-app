@@ -1,13 +1,11 @@
 <template>
-  <div
-    class="w-full max-w-md mx-auto bg-card text-card-foreground border border-border rounded-lg p-6"
-  >
+  <div class="w-full max-w-md mx-auto text-card-foreground p-6">
     <!-- Profile Header -->
     <div class="flex flex-col items-center mb-6">
       <!-- Profile Picture -->
       <div class="relative mb-4">
         <div
-          class="w-24 h-24 rounded-full overflow-hidden bg-muted border-2 border-border"
+          class="w-24 h-24 rounded-full overflow-hidden border-2 border-border"
         >
           <img
             v-if="getCachedBustedImageUrl"
@@ -18,7 +16,7 @@
           />
           <div
             v-else
-            class="w-full h-full flex items-center justify-center bg-primary/10 text-primary"
+            class="w-full h-full flex items-center justify-center text-primary"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +203,7 @@
               <div
                 v-for="location in displayedLocations"
                 :key="location.id"
-                class="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                class="inline-flex items-center gap-2 px-3 py-1 text-primary rounded-full text-sm border border-primary/20"
               >
                 <span>{{ location.displayText }}</span>
                 <button
@@ -278,7 +276,7 @@
               <span
                 v-for="(skill, index) in editableSkills"
                 :key="index"
-                class="inline-flex items-center px-3 py-1 bg-primary/10 text-primary text-sm rounded-full"
+                class="inline-flex items-center px-3 py-1 text-primary text-sm rounded-full border border-primary/20"
               >
                 {{ skill }}
                 <button

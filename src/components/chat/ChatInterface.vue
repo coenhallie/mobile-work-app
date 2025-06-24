@@ -19,7 +19,9 @@
           class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
         ></div>
         <span>{{
-          isReconnecting ? 'Reconnecting...' : 'Connecting to real-time chat...'
+          isReconnecting
+            ? t('messages.reconnecting')
+            : t('messages.connectingToRealTimeChat')
         }}</span>
       </div>
       <div
@@ -27,7 +29,12 @@
         class="flex items-center justify-center gap-2"
       >
         <span
-          >⚠️ Connection error: {{ realtimeLastError || 'Unknown error' }}</span
+          >⚠️
+          {{
+            t('messages.connectionError', {
+              error: realtimeLastError || t('messages.unknownError'),
+            })
+          }}</span
         >
         <Button
           variant="ghost"
@@ -35,13 +42,13 @@
           class="text-white hover:text-red-100 ml-2"
           @click="handleReconnect"
         >
-          Retry
+          {{ t('messages.retry') }}
         </Button>
       </div>
       <div v-else-if="!realtimeIsAuthenticated">
-        🔐 Authentication required for real-time features
+        🔐 {{ t('messages.authenticationRequired') }}
       </div>
-      <div v-else>📡 Real-time connection unavailable</div>
+      <div v-else>📡 {{ t('messages.realTimeConnectionUnavailable') }}</div>
     </div>
 
     <!-- Loading state -->
@@ -54,9 +61,9 @@
     <!-- Error state -->
     <div v-else-if="error" class="text-center text-destructive p-4">
       <p>{{ error }}</p>
-      <Button variant="outline" class="mt-2" @click="loadMessages"
-        >Try Again</Button
-      >
+      <Button variant="outline" class="mt-2" @click="loadMessages">{{
+        t('messages.tryAgain')
+      }}</Button>
     </div>
 
     <!-- Chat content -->
@@ -75,7 +82,11 @@
             @click="loadMoreMessages"
             :disabled="isLoadingMore"
           >
-            {{ isLoadingMore ? 'Loading...' : 'Load Earlier Messages' }}
+            {{
+              isLoadingMore
+                ? t('messages.loading')
+                : t('messages.loadEarlierMessages')
+            }}
           </Button>
         </div>
 
@@ -83,7 +94,9 @@
           v-if="messages.length === 0"
           class="text-center text-muted-foreground py-8"
         >
-          <p>No messages yet. Start the conversation!</p>
+          <p>
+            {{ t('messages.noMessages') }} {{ t('messages.startConversation') }}
+          </p>
         </div>
 
         <!-- Message list with optimized rendering -->
@@ -152,7 +165,9 @@
           v-model="newMessage"
           :placeholder="
             selectedJobForMessage
-              ? `Message about ${selectedJobForMessage.title}...`
+              ? t('messages.messageAboutJob', {
+                  jobTitle: selectedJobForMessage.title,
+                })
               : t('messages.typeMessage')
           "
           class="flex-1 resize-none rounded-2xl border-border bg-input text-foreground focus:border-primary focus:ring focus:ring-primary/20 focus:ring-opacity-50"

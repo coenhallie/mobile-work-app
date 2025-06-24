@@ -220,9 +220,12 @@
             variant="outline"
             size="sm"
             @click="$emit('compare', applicant)"
+            class="min-w-0"
           >
-            <BarChart3 class="w-4 h-4 mr-1" />
-            {{ $t('dashboard.compare') }}
+            <BarChart3 class="w-4 h-4 mr-1 flex-shrink-0" />
+            <span class="truncate">
+              {{ $t('dashboard.compare') }}
+            </span>
           </Button>
 
           <!-- Message Button -->
@@ -231,15 +234,18 @@
             size="sm"
             @click="startConversation"
             :disabled="isCreatingChat"
+            class="min-w-0"
           >
             <div
               v-if="isCreatingChat"
-              class="animate-spin w-4 h-4 mr-1 border-2 border-current border-t-transparent rounded-full"
+              class="animate-spin w-4 h-4 mr-1 border-2 border-current border-t-transparent rounded-full flex-shrink-0"
             ></div>
-            <MessageCircle v-else class="w-4 h-4 mr-1" />
-            {{
-              isCreatingChat ? $t('common.loading') : $t('dashboard.message')
-            }}
+            <MessageCircle v-else class="w-4 h-4 mr-1 flex-shrink-0" />
+            <span class="truncate">
+              {{
+                isCreatingChat ? $t('common.loading') : $t('dashboard.message')
+              }}
+            </span>
           </Button>
 
           <!-- Primary Action Button -->
@@ -248,17 +254,19 @@
             size="sm"
             @click="selectApplicant"
             :disabled="isSelecting"
-            class="bg-primary hover:bg-primary/90"
+            class="bg-primary hover:bg-primary/90 whitespace-nowrap min-w-0 px-3"
           >
             <div
               v-if="isSelecting"
               class="animate-spin w-4 h-4 mr-1 border-2 border-current border-t-transparent rounded-full"
             ></div>
-            {{
-              isSelecting
-                ? $t('dashboard.selecting')
-                : $t('dashboard.selectContractor')
-            }}
+            <span class="truncate">
+              {{
+                isSelecting
+                  ? $t('dashboard.selecting')
+                  : $t('dashboard.selectContractor')
+              }}
+            </span>
           </Button>
 
           <Button
@@ -266,10 +274,12 @@
             size="sm"
             variant="outline"
             @click="startConversation"
-            class="border-green-200 text-green-700 hover:bg-green-50"
+            class="border-green-200 text-green-700 hover:bg-green-50 min-w-0"
           >
-            <CheckCircle class="w-4 h-4 mr-1" />
-            {{ $t('dashboard.selected') }}
+            <CheckCircle class="w-4 h-4 mr-1 flex-shrink-0" />
+            <span class="truncate">
+              {{ $t('dashboard.selected') }}
+            </span>
           </Button>
         </div>
       </div>

@@ -290,7 +290,8 @@ const getDescriptionLineClasses = (index) => {
 }
 
 .category-skeleton {
-  aspect-ratio: 1 / 1;
+  min-height: 150px;
+  /* Match the ServiceCard min-height instead of using aspect-ratio */
   /* Remove flex properties that might interfere with grid layout */
   /* The parent grid container will handle the layout */
 }

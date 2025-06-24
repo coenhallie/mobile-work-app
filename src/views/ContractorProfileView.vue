@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="w-full max-w-7xl mx-auto px-4 py-6 bg-white dark:bg-gray-900 min-h-screen pb-32"
-  >
+  <div class="w-full max-w-7xl mx-auto px-4 py-6 min-h-screen pb-32">
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-normal text-gray-900 dark:text-white mb-2">
@@ -29,14 +27,11 @@
     </div>
 
     <!-- Profile Display -->
-    <div
-      v-else-if="contractor"
-      class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6"
-    >
+    <div v-else-if="contractor" class="p-6">
       <div class="flex items-center mb-6">
         <!-- Profile Photo -->
         <div
-          class="h-24 w-24 rounded-full bg-muted flex items-center justify-center overflow-hidden mr-4 ring-2 ring-border"
+          class="h-24 w-24 rounded-full flex items-center justify-center overflow-hidden mr-4 ring-2 ring-border"
         >
           <!-- Show loading indicator while data is loading -->
           <div
@@ -150,14 +145,11 @@
     <!-- Enhanced Sticky Contact Section -->
     <div
       v-if="contractor"
-      class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-white dark:bg-gray-900 backdrop-blur-sm border-t border-border shadow-lg z-[90]"
+      class="fixed bottom-16 md:bottom-0 left-0 right-0 backdrop-blur-sm border-t border-border shadow-lg z-[90]"
     >
       <div class="max-w-6xl mx-auto p-4">
         <!-- Contact Success Feedback -->
-        <div
-          v-if="showContactSuccess"
-          class="mb-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-center"
-        >
+        <div v-if="showContactSuccess" class="mb-3 p-3 text-center">
           <div
             class="flex items-center justify-center text-green-700 dark:text-green-300"
           >

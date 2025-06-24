@@ -27,7 +27,15 @@
             :title-id="titleId"
           />
         </slot>
-        <slot></slot>
+        <!-- Scrollable content container with native mobile bottom sheet styling -->
+        <div class="flex-1 overflow-hidden">
+          <div
+            class="h-full overflow-y-auto px-4 py-4 pb-6 bottom-sheet-content"
+            :id="descriptionId"
+          >
+            <slot></slot>
+          </div>
+        </div>
       </div>
     </transition>
   </teleport>
@@ -197,5 +205,17 @@ watch(
 .backdrop-enter-from,
 .backdrop-leave-to {
   opacity: 0;
+}
+
+/* Smooth scrolling for the content area */
+.bottom-sheet-content {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar on webkit browsers for cleaner look */
+.bottom-sheet-content::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
 }
 </style>

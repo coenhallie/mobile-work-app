@@ -198,6 +198,9 @@ const filteredJobs = computed(() => {
     filtered = filtered.filter((job) =>
       selectedStatuses.value.includes(job.status)
     );
+  } else {
+    // If no specific statuses are selected, exclude cancelled jobs by default
+    filtered = filtered.filter((job) => job.status !== 'cancelled');
   }
 
   // Sort jobs
@@ -474,9 +477,14 @@ const formatActivityTime = (timestamp) => {
 
 // Filter handling
 const handleApplyFilters = (filters) => {
+  console.log('Dashboard: Applying filters', JSON.stringify(filters));
   sortBy.value = filters.sort;
   activeView.value = filters.view;
   selectedStatuses.value = filters.statuses;
+  console.log(
+    'Dashboard: Statuses set to',
+    JSON.stringify(selectedStatuses.value)
+  );
 };
 
 // Lifecycle
@@ -496,6 +504,11 @@ onMounted(async () => {
 
 // Watch for view changes to update URL and clear status filters
 watch(activeView, (newView) => {
+  console.log(
+    'Dashboard: activeView changed to',
+    newView,
+    '. Clearing status filters.'
+  );
   // Clear status filters when view changes
   selectedStatuses.value = [];
 

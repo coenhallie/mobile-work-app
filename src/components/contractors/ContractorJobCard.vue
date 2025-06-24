@@ -17,7 +17,7 @@
         :alt-text="job.service_name || job.category_name || 'Service Request'"
         :height="viewMode === 'list' ? 'h-32' : 'h-40'"
         :show-navigation="false"
-        :show-indicators="viewMode === 'cards'"
+        :show-indicators="(job.photos || []).length > 1"
         class="rounded-t-lg -mx-4 -mt-4"
       />
     </template>

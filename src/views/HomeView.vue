@@ -325,7 +325,8 @@ const filteredUserJobs = computed(() => {
       return userJobs.value.filter((job) => (job.applicant_count || 0) > 0);
     case 'all':
     default:
-      return userJobs.value;
+      // Exclude cancelled jobs by default
+      return userJobs.value.filter((job) => job.status !== 'cancelled');
   }
 });
 

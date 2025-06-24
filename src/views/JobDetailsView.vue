@@ -158,8 +158,8 @@
             :images="jobStore.currentJob.photos || []"
             :alt-text="`${jobStore.currentJob.category_name} job details`"
             height="h-full"
-            :show-navigation="true"
-            :show-indicators="false"
+            :show-navigation="false"
+            :show-indicators="(jobStore.currentJob.photos || []).length > 1"
             @image-error="handleImageError"
             @slide-change="handleSlideChange"
           />
@@ -245,6 +245,7 @@
                     size="sm"
                   />
 
+                  <!-- Show ApplicantCounter only for open jobs -->
                   <ApplicantCounter
                     v-if="jobStore.currentJob.status === JOB_STATUS.OPEN"
                     :count="jobStore.currentJob.applicant_count || 0"
@@ -415,6 +416,54 @@
                 >
                   {{ $t('jobs.cancelJob') }}
                 </Button>
+              </div>
+
+              <!-- Assigned Contractor Section -->
+              <div
+                v-if="
+                  jobStore.currentJob.selected_contractor_id &&
+                  isJobOwner &&
+                  [
+                    'assigned',
+                    'in_progress',
+                    'completed',
+                    'cancelled',
+                  ].includes(jobStore.currentJob.status)
+                "
+                class="border-t border-border pt-8"
+              >
+                <h2
+                  class="text-lg font-normal text-gray-900 dark:text-white mb-4 flex items-center"
+                >
+                  <svg
+                    class="w-4 h-4 mr-2 text-gray-600 dark:text-gray-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    ></path>
+                  </svg>
+                  {{ $t('jobs.assignedContractor') }}
+                </h2>
+                <AssignedContractorCard
+                  :user="jobStore.currentJob.assignedContractor"
+                  :job-status="jobStore.currentJob.status"
+                  :is-job-owner="isJobOwner"
+                  :user-role="userRole"
+                  :job-id="jobStore.currentJob.id"
+                  :chat-room-id="jobStore.currentJob.chatRoomId"
+                  @view-profile="handleViewProfile"
+                  @start-conversation="handleStartConversation"
+                  @phone-call="handlePhoneCall"
+                  @mark-in-progress="handleMarkInProgress"
+                  @mark-completed="handleMarkCompleted"
+                  @rate-contractor="handleRateContractor"
+                />
               </div>
 
               <!-- Payment Actions (for desktop) -->
@@ -696,6 +745,7 @@ import { Button } from '@/components/ui/button';
 import JobApplicantsList from '../components/jobs/JobApplicantsList.vue';
 import JobApplicationForm from '../components/jobs/JobApplicationForm.vue';
 import ApplicantCounter from '../components/jobs/ApplicantCounter.vue';
+import AssignedContractorCard from '../components/jobs/AssignedContractorCard.vue';
 import JobActionButton from '../components/jobs/JobActionButton.vue';
 import JobImageCarousel from '../components/jobs/JobImageCarousel.vue';
 import PaymentModal from '@/components/payments/PaymentModal.vue';
@@ -1494,6 +1544,113 @@ onBeforeUnmount(() => {
     '[JobDetailsView] Component unmounting completed - navigation should work now'
   );
 });
+
+// Event handlers for AssignedContractorCard
+const handleViewProfile = (contractor) => {
+  console.log(
+    '[JobDetailsView] View profile requested for contractor:',
+    contractor
+  );
+  // Navigate to contractor profile
+  router.push(`/contractors/${contractor.id || contractor.user_id}`);
+};
+
+const handleStartConversation = async (contractor) => {
+  console.log(
+    '[JobDetailsView] Start conversation requested for contractor:',
+    contractor
+  );
+  try {
+    // This will be handled by the AssignedContractorCard component itself
+    // The component will create the chat room and navigate to it
+  } catch (error) {
+    console.error('[JobDetailsView] Error starting conversation:', error);
+    alert('Failed to start conversation. Please try again.');
+  }
+};
+
+const handlePhoneCall = (contractor) => {
+  console.log(
+    '[JobDetailsView] Phone call requested for contractor:',
+    contractor
+  );
+  // The AssignedContractorCard component handles the actual phone call
+  // This is just for logging/analytics if needed
+};
+
+const handleMarkInProgress = async (contractor) => {
+  console.log(
+    '[JobDetailsView] Mark in progress requested for contractor:',
+    contractor
+  );
+  try {
+    // Update job status to in_progress
+    const { error } = await getSupabase()
+      .from('jobs')
+      .update({ status: 'in_progress' })
+      .eq('id', jobId.value);
+
+    if (error) {
+      console.error(
+        '[JobDetailsView] Error updating job status to in_progress:',
+        error
+      );
+      alert('Failed to update job status. Please try again.');
+      return;
+    }
+
+    // Refresh job data
+    await jobStore.fetchJobById(jobId.value, true);
+    alert('Job status updated to "In Progress"');
+  } catch (error) {
+    console.error('[JobDetailsView] Error marking job in progress:', error);
+    alert('Failed to update job status. Please try again.');
+  }
+};
+
+const handleMarkCompleted = async (contractor) => {
+  console.log(
+    '[JobDetailsView] Mark completed requested for contractor:',
+    contractor
+  );
+  try {
+    // Update job status to completed
+    const { error } = await getSupabase()
+      .from('jobs')
+      .update({ status: 'completed' })
+      .eq('id', jobId.value);
+
+    if (error) {
+      console.error(
+        '[JobDetailsView] Error updating job status to completed:',
+        error
+      );
+      alert('Failed to update job status. Please try again.');
+      return;
+    }
+
+    // Refresh job data
+    await jobStore.fetchJobById(jobId.value, true);
+    alert('Job status updated to "Completed"');
+  } catch (error) {
+    console.error('[JobDetailsView] Error marking job completed:', error);
+    alert('Failed to update job status. Please try again.');
+  }
+};
+
+const handleRateContractor = (contractor) => {
+  console.log(
+    '[JobDetailsView] Rate contractor requested for contractor:',
+    contractor
+  );
+  // Navigate to rating page or show rating modal
+  // For now, we'll show an alert - this can be enhanced later
+  alert('Rating functionality will be implemented soon.');
+
+  // Future implementation could be:
+  // router.push(`/rate-contractor/${contractor.id}?jobId=${jobId.value}`);
+  // or show a rating modal component
+};
 
 // Duplicate onMounted removed - logic consolidated in main onMounted hook above
 </script>

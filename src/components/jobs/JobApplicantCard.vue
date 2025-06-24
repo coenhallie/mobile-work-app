@@ -111,14 +111,16 @@
             @click.stop="handleSelectContractor"
             :disabled="isSelecting"
             size="sm"
-            class="flex-1"
+            class="flex-1 min-w-0"
           >
-            <Check class="w-4 h-4 mr-1.5" />
-            {{
-              isSelecting
-                ? $t('dashboard.selecting')
-                : $t('dashboard.selectContractor')
-            }}
+            <Check class="w-4 h-4 mr-1.5 flex-shrink-0" />
+            <span class="truncate">
+              {{
+                isSelecting
+                  ? $t('dashboard.selecting')
+                  : $t('dashboard.selectContractor')
+              }}
+            </span>
           </Button>
 
           <Button
@@ -126,12 +128,16 @@
             :disabled="isCreatingChat"
             size="sm"
             variant="outline"
-            class="flex-1"
+            class="flex-1 min-w-0"
           >
-            <MessageCircle class="w-4 h-4 mr-1.5" />
-            {{
-              isCreatingChat ? $t('dashboard.sending') : $t('dashboard.message')
-            }}
+            <MessageCircle class="w-4 h-4 mr-1.5 flex-shrink-0" />
+            <span class="truncate">
+              {{
+                isCreatingChat
+                  ? $t('dashboard.sending')
+                  : $t('dashboard.message')
+              }}
+            </span>
           </Button>
         </template>
 
@@ -140,12 +146,16 @@
             @click.stop="handleMessageContractor"
             :disabled="isCreatingChat"
             size="sm"
-            class="flex-1"
+            class="flex-1 min-w-0"
           >
-            <MessageCircle class="w-4 h-4 mr-1.5" />
-            {{
-              isCreatingChat ? $t('dashboard.sending') : $t('dashboard.message')
-            }}
+            <MessageCircle class="w-4 h-4 mr-1.5 flex-shrink-0" />
+            <span class="truncate">
+              {{
+                isCreatingChat
+                  ? $t('dashboard.sending')
+                  : $t('dashboard.message')
+              }}
+            </span>
           </Button>
         </template>
       </div>

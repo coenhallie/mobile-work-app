@@ -193,7 +193,28 @@
     "earningsOverview": "Earnings Overview",
     "monthlyEarningsDescription": "Your earnings over the past months",
     "earned": "Earned",
-    "client": "Client"
+    "client": "Client",
+    "callContractor": "Call Contractor",
+    "markInProgress": "Mark In Progress",
+    "contactInfo": "Contact Information",
+    "about": "About",
+    "call": "Call",
+    "startJob": "Start Job",
+    "rateContractor": "Rate Contractor",
+    "assigned": "Assigned",
+    "inProgress": "In Progress",
+    "cancelled": "Cancelled",
+    "waitingToStart": "Waiting to start",
+    "workInProgress": "Work in progress",
+    "jobCompleted": "Job completed",
+    "jobCancelled": "Job cancelled",
+    "loadingContractor": "Loading contractor...",
+    "unnamedContractor": "Unnamed contractor",
+    "unknown": "Unknown",
+    "agreedTerms": "Agreed Terms",
+    "negotiatedAmount": "Negotiated Amount",
+    "additionalTerms": "Additional Terms",
+    "agreedOn": "Agreed on"
   },
   "jobStatus": {
     "open": "Open",
@@ -257,7 +278,8 @@
     "completed": "Completed",
     "applyForJob": "Apply for Job",
     "submitApplication": "Submit your application for this job",
-    "jobNotFound": "Job not found"
+    "jobNotFound": "Job not found",
+    "assignedContractor": "Assigned Contractor"
   },
   "locationSelection": {
     "doneButton": "Done"
@@ -366,7 +388,19 @@
     "title": "Messages",
     "conversationsDescription": "Your conversations and chat history",
     "noMessages": "No messages yet",
-    "startConversation": "Start a conversation"
+    "startConversation": "Start a conversation",
+    "typeMessage": "Type a message...",
+    "messageAboutJob": "Message about {jobTitle}...",
+    "reconnecting": "Reconnecting...",
+    "connectingToRealTimeChat": "Connecting to real-time chat...",
+    "connectionError": "Connection error: {error}",
+    "unknownError": "Unknown error",
+    "retry": "Retry",
+    "authenticationRequired": "Authentication required for real-time features",
+    "realTimeConnectionUnavailable": "Real-time connection unavailable",
+    "tryAgain": "Try Again",
+    "loading": "Loading...",
+    "loadEarlierMessages": "Load Earlier Messages"
   },
   "time": {
     "justNow": "Just now",
@@ -477,6 +511,31 @@
     "lastUpdated": "Last Updated",
     "signingOut": "Signing out...",
     "logout": "Logout"
+  },
+  "assignedContractor": {
+    "title": "Assigned Contractor",
+    "workingOn": "Working on this job",
+    "contactInfo": "Contact Information",
+    "skills": "Skills",
+    "experience": "Experience",
+    "rating": "Rating",
+    "completionRate": "Completion Rate",
+    "responseTime": "Response Time",
+    "online": "Online",
+    "offline": "Offline",
+    "actions": "Actions",
+    "viewProfile": "View Profile",
+    "sendMessage": "Send Message",
+    "callContractor": "Call Contractor",
+    "startJob": "Start Job",
+    "markInProgress": "Mark In Progress",
+    "markCompleted": "Mark Completed",
+    "rateContractor": "Rate Contractor",
+    "jobStatus": "Job Status",
+    "assigned": "Assigned",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
   },
   "contractorProfile": {
     "title": "Contractor Profile",

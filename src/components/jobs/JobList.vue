@@ -68,7 +68,7 @@
             :alt-text="`${job.category_name} job`"
             height="h-48"
             :show-navigation="false"
-            :show-indicators="true"
+            :show-indicators="(job.photos || []).length > 1"
             @image-error="handleImageError"
             @slide-change="handleSlideChange(job.id, $event)"
           />

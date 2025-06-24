@@ -146,6 +146,9 @@ const filteredJobs = computed(() => {
     filtered = filtered.filter((job) =>
       selectedStatuses.value.includes(job.status)
     );
+  } else {
+    // If no specific statuses are selected, exclude cancelled jobs by default
+    filtered = filtered.filter((job) => job.status !== 'cancelled');
   }
 
   // Sort jobs

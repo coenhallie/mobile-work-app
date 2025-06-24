@@ -5,146 +5,151 @@
     height="auto"
     @close="handleClose"
   >
-    <div class="p-6 space-y-6">
-      <!-- Sort Options -->
-      <div class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white">
-          {{ $t('dashboard.sortBy') }}
-        </h3>
-        <div class="space-y-2">
-          <button
-            v-for="option in sortOptions"
-            :key="option.value"
-            @click="selectSort(option.value)"
-            class="w-full flex items-center justify-between p-3 rounded-lg border transition-all duration-200"
-            :class="[
-              selectedSort === option.value
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300',
-            ]"
-          >
-            <div class="flex items-center space-x-3">
-              <component
-                :is="option.icon"
-                class="w-5 h-5"
-                :class="[
-                  selectedSort === option.value
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-gray-400',
-                ]"
-              />
-              <div class="text-left">
-                <div class="font-medium">{{ option.label }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ option.description }}
-                </div>
-              </div>
-            </div>
-            <div
-              v-if="selectedSort === option.value"
-              class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center"
-            >
-              <Check class="w-3 h-3 text-white" />
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- View Filter -->
-      <div class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white">
-          {{ $t('dashboard.showJobs') }}
-        </h3>
-        <div class="space-y-2">
-          <button
-            v-for="view in viewOptions"
-            :key="view.value"
-            @click="selectView(view.value)"
-            class="w-full flex items-center justify-between p-3 rounded-lg border transition-all duration-200"
-            :class="[
-              selectedView === view.value
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300',
-            ]"
-          >
-            <div class="flex items-center space-x-3">
-              <component
-                :is="view.icon"
-                class="w-5 h-5"
-                :class="[
-                  selectedView === view.value
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-gray-400',
-                ]"
-              />
-              <div class="text-left">
-                <div class="font-medium">{{ view.label }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ view.description }}
-                </div>
-              </div>
-            </div>
-            <div
-              v-if="selectedView === view.value"
-              class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center"
-            >
-              <Check class="w-3 h-3 text-white" />
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Status Filter -->
-      <div class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white">
-          {{ $t('dashboard.jobStatus') }}
-        </h3>
-        <div class="grid grid-cols-2 gap-2">
-          <button
-            v-for="status in statusOptions"
-            :key="status.value"
-            @click="toggleStatus(status.value)"
-            class="flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200"
-            :class="[
-              selectedStatuses.includes(status.value)
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300',
-            ]"
-          >
-            <div
-              class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors"
+    <div class="flex flex-col h-full">
+      <!-- Scrollable Content Container -->
+      <div
+        class="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollable-content"
+      >
+        <!-- Sort Options -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+            {{ $t('dashboard.sortBy') }}
+          </h3>
+          <div class="space-y-2">
+            <button
+              v-for="option in sortOptions"
+              :key="option.value"
+              @click="selectSort(option.value)"
+              class="w-full flex items-center justify-between p-3 rounded-lg border transition-all duration-200"
               :class="[
-                selectedStatuses.includes(status.value)
-                  ? 'border-blue-500 bg-blue-500'
-                  : 'border-gray-300 dark:border-gray-600',
+                selectedSort === option.value
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300',
               ]"
             >
-              <Check
-                v-if="selectedStatuses.includes(status.value)"
-                class="w-3 h-3 text-white"
-              />
-            </div>
-            <span class="text-sm font-medium">{{ status.label }}</span>
+              <div class="flex items-center space-x-3">
+                <component
+                  :is="option.icon"
+                  class="w-5 h-5"
+                  :class="[
+                    selectedSort === option.value
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-400',
+                  ]"
+                />
+                <div class="text-left">
+                  <div class="font-medium">{{ option.label }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ option.description }}
+                  </div>
+                </div>
+              </div>
+              <div
+                v-if="selectedSort === option.value"
+                class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center"
+              >
+                <Check class="w-3 h-3 text-white" />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- View Filter -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+            {{ $t('dashboard.showJobs') }}
+          </h3>
+          <div class="space-y-2">
+            <button
+              v-for="view in viewOptions"
+              :key="view.value"
+              @click="selectView(view.value)"
+              class="w-full flex items-center justify-between p-3 rounded-lg border transition-all duration-200"
+              :class="[
+                selectedView === view.value
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300',
+              ]"
+            >
+              <div class="flex items-center space-x-3">
+                <component
+                  :is="view.icon"
+                  class="w-5 h-5"
+                  :class="[
+                    selectedView === view.value
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-400',
+                  ]"
+                />
+                <div class="text-left">
+                  <div class="font-medium">{{ view.label }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ view.description }}
+                  </div>
+                </div>
+              </div>
+              <div
+                v-if="selectedView === view.value"
+                class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center"
+              >
+                <Check class="w-3 h-3 text-white" />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+            {{ $t('dashboard.jobStatus') }}
+          </h3>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              v-for="status in statusOptions"
+              :key="status.value"
+              @click="toggleStatus(status.value)"
+              class="flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200"
+              :class="[
+                selectedStatuses.includes(status.value)
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300',
+              ]"
+            >
+              <div
+                class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors"
+                :class="[
+                  selectedStatuses.includes(status.value)
+                    ? 'border-blue-500 bg-blue-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
+              >
+                <Check
+                  v-if="selectedStatuses.includes(status.value)"
+                  class="w-3 h-3 text-white"
+                />
+              </div>
+              <span class="text-sm font-medium">{{ status.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div
+          class="flex space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
+          <button
+            @click="clearFilters"
+            class="flex-1 px-4 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            {{ $t('common.clear') }}
+          </button>
+          <button
+            @click="applyFilters"
+            class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            {{ $t('common.apply') }}
           </button>
         </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div
-        class="flex space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700"
-      >
-        <button
-          @click="clearFilters"
-          class="flex-1 px-4 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-        >
-          {{ $t('common.clear') }}
-        </button>
-        <button
-          @click="applyFilters"
-          class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-        >
-          {{ $t('common.apply') }}
-        </button>
       </div>
     </div>
   </BottomSheet>
@@ -350,5 +355,53 @@ watch(
 button:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
+}
+
+/* Scrollable content styling for mobile optimization */
+.scrollable-content {
+  /* Enable smooth scrolling on mobile devices */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+
+  /* Ensure proper scrolling on mobile */
+  overscroll-behavior: contain;
+
+  /* Add momentum scrolling for iOS */
+  -webkit-scroll-behavior: smooth;
+
+  /* Optimize for mobile touch interactions */
+  touch-action: pan-y;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  .scrollable-content {
+    /* Reduce horizontal padding on mobile for more content space */
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Optimize button spacing for mobile */
+  .space-y-2 > * + * {
+    margin-top: 0.75rem;
+  }
+
+  .space-y-3 > * + * {
+    margin-top: 1rem;
+  }
+
+  .space-y-6 > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
+/* Ensure scrollbar is hidden on mobile but content is still scrollable */
+.scrollable-content::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollable-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
