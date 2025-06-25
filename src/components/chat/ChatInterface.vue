@@ -72,7 +72,7 @@
       <div
         ref="messagesContainer"
         class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
-        style="padding-bottom: 120px"
+        style="padding-bottom: 180px"
       >
         <!-- Load more button -->
         <div v-if="hasMoreMessages" class="text-center mb-4">
@@ -128,8 +128,8 @@
           />
         </template>
 
-        <!-- Scroll anchor element -->
-        <div ref="scrollAnchor" class="h-1"></div>
+        <!-- Extra spacing at bottom for better scroll behavior -->
+        <div class="h-4"></div>
       </div>
     </div>
 
@@ -357,7 +357,6 @@ const newMessage = ref('');
 const messagesContainer = ref(null);
 const messageInput = ref(null);
 const imageInput = ref(null);
-const scrollAnchor = ref(null);
 const isMounted = ref(false);
 const hasMoreMessages = ref(false);
 const currentPage = ref(1);
@@ -477,10 +476,13 @@ watch(
 // Simple and reliable scroll handling using scroll anchor
 let scrollTimeout = null;
 
-// Simple scroll to bottom using scrollIntoView
+// Enhanced scroll to bottom function
 function scrollToBottom() {
-  if (!isMounted.value || !scrollAnchor.value) return;
-  scrollAnchor.value.scrollIntoView({ behavior: 'auto', block: 'end' });
+  if (!isMounted.value || !messagesContainer.value) return;
+
+  // Use scrollTop to ensure we scroll to the very bottom
+  const container = messagesContainer.value;
+  container.scrollTop = container.scrollHeight;
 }
 
 // Enhanced messages watcher with simple scroll handling
@@ -1371,6 +1373,8 @@ onMounted(() => {
   scroll-behavior: auto !important;
   /* Prevent scroll anchoring which can interfere with programmatic scrolling */
   overflow-anchor: none;
+  /* Ensure scrolling works properly on mobile */
+  overscroll-behavior: contain;
 }
 
 /* Custom scrollbar for messages container */

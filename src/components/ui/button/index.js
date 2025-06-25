@@ -25,7 +25,10 @@ export const buttonVariants = cva(
         default: 'h-10 px-5 py-2 has-[>svg]:px-4',
         sm: 'h-9 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
         lg: 'h-12 rounded-md px-6 has-[>svg]:px-5 text-base',
+        xl: 'h-14 rounded-lg px-8 has-[>svg]:px-7 text-lg font-semibold',
         icon: 'size-10',
+        'icon-sm': 'size-8',
+        'icon-lg': 'size-12',
       },
     },
     defaultVariants: {

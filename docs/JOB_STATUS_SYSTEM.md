@@ -30,16 +30,10 @@ Jobs in the system follow a defined workflow through the following statuses:
 4. **COMPLETED**
 
    - Status after a contractor marks the job as complete
-   - client can review the completed work
-   - Appears in the client's "Active Projects" list with a "Review Work" action
+   - Client can review the completed work on-site and finalize the job
+   - Appears in the client's "Active Projects" list with a "Finalize Job" action
 
-5. **IN_REVIEW**
-
-   - Status after a client begins reviewing the work
-   - client can finalize the job after review
-   - Contractor sees this job with "Awaiting Review" status
-
-6. **FINALIZED**
+5. **FINALIZED**
    - Final status after the client approves the work and finalizes the job
    - Job is considered complete and payment is processed
    - Job no longer appears in active lists
@@ -58,8 +52,7 @@ The job status system is implemented through several interconnected components:
      - `applyToJob`: OPEN → ASSIGNED
      - `markJobInProgress`: ASSIGNED → IN_PROGRESS
      - `markJobCompleted`: IN_PROGRESS → COMPLETED
-     - `markJobInReview`: COMPLETED → IN_REVIEW
-     - `finalizeJob`: IN_REVIEW → FINALIZED
+     - `finalizeJob`: COMPLETED → FINALIZED
    - Manages job filtering and fetching based on status
 
 2. **Router Navigation Guard (`src/router/index.js`)**
@@ -106,12 +99,11 @@ The job status system is implemented through several interconnected components:
 - Can apply for OPEN jobs → job becomes ASSIGNED
 - Can start ASSIGNED jobs → job becomes IN_PROGRESS
 - Can complete IN_PROGRESS jobs → job becomes COMPLETED
-- Must wait during IN_REVIEW status
+- Must wait for client to finalize during COMPLETED status
 
 ### For clients:
 
-- Can review COMPLETED jobs → job becomes IN_REVIEW
-- Can finalize IN_REVIEW jobs → job becomes FINALIZED
+- Can finalize COMPLETED jobs → job becomes FINALIZED
 - Must wait during ASSIGNED and IN_PROGRESS statuses
 
 ## Extending the System

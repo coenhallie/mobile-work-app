@@ -8,7 +8,7 @@
     <DashboardHeader
       :primary-button-text="$t('clientDashboard.postJobButton')"
       :primary-icon="Plus"
-      :stats="dashboardStats"
+      :stats="enhancedDashboardStats"
       :active-view="activeView"
       @primary-action="$router.push('/services')"
       @view-change="setActiveView"
@@ -44,64 +44,106 @@
     />
   </div>
 
-  <!-- Regular Dashboard Layout for other views -->
-  <DashboardLayout
-    v-else
-    :primary-button-text="$t('clientDashboard.postJobButton')"
-    :primary-icon="Plus"
-    :stats="dashboardStats"
-    :active-view="activeView"
-    :view-title="getViewTitle()"
-    :view-mode="viewMode"
-    :has-active-filters="hasActiveFilters"
-    :active-filters-count="activeFiltersCount"
-    :is-loading="isLoading"
-    :items="filteredJobs"
-    :empty-state-title="getEmptyStateTitle()"
-    :empty-state-description="getEmptyStateDescription()"
-    :empty-action-text="$t('dashboard.postFirstJob')"
-    :empty-action-icon="Plus"
-    :has-more-items="hasMoreJobs"
-    :is-loading-more="isLoadingMore"
-    :loading-text="$t('common.loading')"
-    :load-more-text="$t('common.loadMore')"
-    :recent-activity="recentActivity"
-    :recent-activity-title="$t('dashboard.recentActivity')"
-    :format-activity-time="formatActivityTime"
-    @primary-action="$router.push('/services')"
-    @view-change="setActiveView"
-    @view-mode-change="viewMode = $event"
-    @filter-click="showFilterSheet = true"
-    @empty-action="$router.push('/services')"
-    @load-more="loadMoreJobs"
-  >
-    <!-- Job Card Item Template -->
-    <template #item="{ item: job, viewMode }">
-      <ClientJobCard
-        :job="job"
-        :applications="job.applications || []"
-        :view-mode="viewMode"
-        @view-details="viewJobDetails"
-        @edit-job="editJob"
-        @view-applications="viewApplications"
-        @mark-completed="markJobCompleted"
-        @delete-job="deleteJob"
-        @view-applicant-details="viewApplicantDetails"
-        @select-contractor="selectContractor"
-      />
-    </template>
+  <!-- Enhanced Dashboard Layout with Priority Sections -->
+  <div v-else class="client-dashboard bg-white dark:bg-gray-900 min-h-screen">
+    <!-- Dashboard Header -->
+    <DashboardHeader
+      :primary-button-text="$t('clientDashboard.postJobButton')"
+      :primary-icon="Plus"
+      :stats="enhancedDashboardStats"
+      :active-view="activeView"
+      @primary-action="$router.push('/services')"
+      @view-change="setActiveView"
+    />
+
+    <!-- Actions Bar -->
+    <DashboardActionsBar
+      :title="getViewTitle()"
+      :view-mode="viewMode"
+      :has-active-filters="hasActiveFilters"
+      :active-filters-count="activeFiltersCount"
+      @view-mode-change="viewMode = $event"
+      @filter-click="showFilterSheet = true"
+    />
+
+    <!-- Main Content Area -->
+    <div class="px-3 pb-4 space-y-6">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex justify-center py-8">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+        ></div>
+      </div>
+
+      <!-- Simplified Job List -->
+      <div v-else-if="prioritizedJobs.length > 0" class="space-y-3">
+        <ClientJobCard
+          v-for="job in prioritizedJobs"
+          :key="job.id"
+          :job="job"
+          :applications="job.applications || []"
+          :view-mode="viewMode"
+          :priority-level="getPriorityLevel(job)"
+          @view-details="viewJobDetails"
+          @edit-job="editJob"
+          @view-applications="viewApplications"
+          @mark-completed="markJobCompleted"
+          @delete-job="deleteJob"
+          @view-applicant-details="viewApplicantDetails"
+          @select-contractor="selectContractor"
+          @job-action="handleJobAction"
+        />
+
+        <!-- Load More Button -->
+        <div v-if="hasMoreJobs" class="flex justify-center pt-4">
+          <button
+            @click="loadMoreJobs"
+            :disabled="isLoadingMore"
+            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          >
+            <div
+              v-if="isLoadingMore"
+              class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+            ></div>
+            <span>{{
+              isLoadingMore ? $t('common.loading') : $t('common.loadMore')
+            }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="text-center py-12">
+        <div class="mx-auto h-12 w-12 text-gray-400">
+          <Plus class="h-12 w-12" />
+        </div>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+          {{ getEmptyStateTitle() }}
+        </h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {{ getEmptyStateDescription() }}
+        </p>
+        <div class="mt-6">
+          <button
+            @click="$router.push('/services')"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <Plus class="h-5 w-5 mr-2" />
+            {{ $t('dashboard.postFirstJob') }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Filter Bottom Sheet -->
-    <template #filter-sheet>
-      <JobFilterBottomSheet
-        v-model="showFilterSheet"
-        :current-sort="sortBy"
-        :current-view="activeView"
-        :current-statuses="selectedStatuses"
-        @apply-filters="handleApplyFilters"
-      />
-    </template>
-  </DashboardLayout>
+    <JobFilterBottomSheet
+      v-model="showFilterSheet"
+      :current-sort="sortBy"
+      :current-view="activeView"
+      :current-statuses="selectedStatuses"
+      @apply-filters="handleApplyFilters"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -170,30 +212,155 @@ const totalApplicationsCount = computed(() =>
   jobs.value.reduce((total, job) => total + (job.applicant_count || 0), 0)
 );
 
-const filteredJobs = computed(() => {
-  let filtered = [...jobsWithApplications.value];
+// Helper functions for priority calculation
+const isWithin24Hours = (dateString) => {
+  if (!dateString) return false;
+  const deadline = new Date(dateString);
+  const now = new Date();
+  const diffInHours = (deadline - now) / (1000 * 60 * 60);
+  return diffInHours > 0 && diffInHours <= 24;
+};
 
-  // First apply view filter
+const getPriorityScore = (job) => {
+  let score = 0;
+
+  // Urgent priority (highest)
+  if (job.status === 'completed') score += 1000; // Awaiting finalization
+  if (job.deadline && isWithin24Hours(job.deadline)) score += 800; // Approaching deadline
+
+  // High priority
+  if (['assigned', 'in_progress'].includes(job.status)) score += 700;
+  if ((job.applicant_count || 0) > 0 && job.status === 'open') score += 600;
+
+  // Medium priority
+  if (job.status === 'open') score += 500;
+  if (job.is_urgent || job.isUrgent) score += 100;
+
+  // Recent activity bonus
+  const daysSinceUpdate =
+    (new Date() - new Date(job.updated_at || job.created_at)) /
+    (1000 * 60 * 60 * 24);
+  if (daysSinceUpdate < 1) score += 50;
+
+  return score;
+};
+
+const getPriorityLevel = (job) => {
+  if (job.is_urgent || job.isUrgent) return 'urgent';
+  if (job.status === 'completed') return 'urgent';
+  if (['assigned', 'in_progress'].includes(job.status)) return 'high';
+  if ((job.applicant_count || 0) > 0 && job.status === 'open') return 'high';
+  if (job.deadline && isWithin24Hours(job.deadline)) return 'urgent';
+  return 'medium';
+};
+
+// Priority-based job categorization
+const needsAttentionJobs = computed(() => {
+  return jobsWithApplications.value
+    .filter((job) => {
+      // Jobs requiring immediate client action
+      const isCompletedAwaitingReview =
+        job.status === 'completed' && !job.reviewed;
+      const isCompletedAwaitingFinalization = job.status === 'completed';
+      const isInReviewAwaitingFinalization = job.status === 'in_review';
+      const hasNewApplications =
+        (job.applicant_count || 0) > 0 && job.status === 'open';
+      const isApproachingDeadline =
+        job.deadline && isWithin24Hours(job.deadline);
+      const isUrgent = job.is_urgent || job.isUrgent;
+
+      return (
+        isCompletedAwaitingReview ||
+        isInReviewAwaitingFinalization ||
+        (hasNewApplications && isUrgent) ||
+        isApproachingDeadline
+      );
+    })
+    .sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
+});
+
+const activeJobs = computed(() => {
+  return jobsWithApplications.value
+    .filter((job) => {
+      const isActive = ['assigned', 'in_progress'].includes(job.status);
+      const isNotInAttention = !needsAttentionJobs.value.find(
+        (attentionJob) => attentionJob.id === job.id
+      );
+      return isActive && isNotInAttention;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.updated_at || b.created_at) -
+        new Date(a.updated_at || a.created_at)
+    );
+});
+
+const openJobs = computed(() => {
+  return jobsWithApplications.value
+    .filter((job) => {
+      const isOpen = job.status === 'open';
+      const isNotInAttention = !needsAttentionJobs.value.find(
+        (attentionJob) => attentionJob.id === job.id
+      );
+      return isOpen && isNotInAttention;
+    })
+    .sort((a, b) => {
+      // Sort by application count first, then by date
+      const appCountDiff = (b.applicant_count || 0) - (a.applicant_count || 0);
+      if (appCountDiff !== 0) return appCountDiff;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+});
+
+const completedJobs = computed(() => {
+  return jobsWithApplications.value
+    .filter((job) => {
+      const isCompleted = ['finalized', 'cancelled'].includes(job.status);
+      const isNotInAttention = !needsAttentionJobs.value.find(
+        (attentionJob) => attentionJob.id === job.id
+      );
+      return isCompleted && isNotInAttention;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.updated_at || b.created_at) -
+        new Date(a.updated_at || a.created_at)
+    );
+});
+
+// Prioritized jobs for the main dashboard view
+const prioritizedJobs = computed(() => {
+  if (activeView.value === 'applications') {
+    return jobsWithApplications.value.filter(
+      (job) => (job.applicant_count || 0) > 0
+    );
+  }
+
+  let filtered = [];
+
+  // Apply view-specific filtering
   switch (activeView.value) {
     case 'active':
-      filtered = filtered.filter((job) =>
-        ['open', 'in_progress', 'assigned'].includes(job.status)
-      );
+      filtered = [...needsAttentionJobs.value, ...activeJobs.value];
       break;
     case 'completed':
-      filtered = filtered.filter((job) => job.status === 'completed');
-      break;
-    case 'applications':
-      // For applications view, show jobs that have applications
-      filtered = filtered.filter((job) => (job.applicant_count || 0) > 0);
+      filtered = [
+        ...needsAttentionJobs.value.filter((job) => job.status === 'completed'),
+        ...completedJobs.value,
+      ];
       break;
     case 'all':
     default:
-      // 'all' shows everything - no additional filtering needed
+      filtered = [
+        ...needsAttentionJobs.value,
+        ...activeJobs.value,
+        ...openJobs.value,
+        ...completedJobs.value,
+      ];
       break;
   }
 
-  // Then apply status filter if any specific statuses are selected
+  // Apply status filter if any specific statuses are selected
   if (selectedStatuses.value.length > 0) {
     filtered = filtered.filter((job) =>
       selectedStatuses.value.includes(job.status)
@@ -203,22 +370,12 @@ const filteredJobs = computed(() => {
     filtered = filtered.filter((job) => job.status !== 'cancelled');
   }
 
-  // Sort jobs
-  switch (sortBy.value) {
-    case 'date':
-      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      break;
-    case 'applications':
-      filtered.sort(
-        (a, b) => (b.applicant_count || 0) - (a.applicant_count || 0)
-      );
-      break;
-    case 'status':
-      filtered.sort((a, b) => a.status.localeCompare(b.status));
-      break;
-  }
-
   return filtered;
+});
+
+const filteredJobs = computed(() => {
+  // Use prioritized jobs for the new dashboard layout
+  return prioritizedJobs.value;
 });
 
 // Filter state computed properties
@@ -238,8 +395,8 @@ const activeFiltersCount = computed(() => {
   return count;
 });
 
-// Dashboard stats for the reusable component
-const dashboardStats = computed(() => [
+// Enhanced dashboard stats without attention indicator
+const enhancedDashboardStats = computed(() => [
   {
     key: 'all',
     value: totalJobsCount.value,
@@ -269,6 +426,9 @@ const dashboardStats = computed(() => [
     valueColor: 'text-gray-600',
   },
 ]);
+
+// Legacy dashboard stats for backward compatibility
+const dashboardStats = computed(() => enhancedDashboardStats.value);
 
 // Methods
 const setActiveView = async (view) => {
@@ -377,6 +537,39 @@ const deleteJob = async (job) => {
     } catch (error) {
       console.error('Error deleting job:', error);
     }
+  }
+};
+
+// Handle job action events from JobActionButton
+const handleJobAction = async (action, jobId) => {
+  console.log(
+    `[ClientDashboard] Handling job action: ${action} for job ID: ${jobId}`
+  );
+
+  try {
+    switch (action) {
+      case 'review':
+        await jobStore.markJobInReview(jobId);
+        break;
+      case 'finalize':
+        await jobStore.finalizeJob(jobId);
+        break;
+      case 'cancel':
+        if (confirm(t('dashboard.confirmCancelJob'))) {
+          await jobStore.cancelJob(jobId);
+        }
+        break;
+      default:
+        console.warn(`[ClientDashboard] Unknown action: ${action}`);
+        return;
+    }
+
+    // Refresh jobs after successful action
+    await jobStore.fetchJobsByUser(props.userId);
+    console.log(`[ClientDashboard] Job ${action} completed successfully`);
+  } catch (error) {
+    console.error(`[ClientDashboard] Error handling ${action} action:`, error);
+    alert(`Error ${action}ing job: ${error.message}`);
   }
 };
 
@@ -495,6 +688,21 @@ onMounted(async () => {
 
     // Fetch applications for jobs that have applications
     await fetchApplicationsForJobsWithApplications();
+
+    // Auto-focus on active jobs if they exist and no specific view is set
+    if (!router.currentRoute.value.query.view) {
+      // Check if there are jobs needing attention or active jobs
+      const hasAttentionJobs = needsAttentionJobs.value.length > 0;
+      const hasActiveJobs = activeJobs.value.length > 0;
+
+      if (hasAttentionJobs || hasActiveJobs) {
+        // Focus on active view to show jobs that need attention
+        activeView.value = 'active';
+      }
+    } else {
+      // Set view from URL query parameter
+      activeView.value = router.currentRoute.value.query.view || 'all';
+    }
   } catch (error) {
     console.error('Error in ClientDashboard onMounted:', error);
   } finally {

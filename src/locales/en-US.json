@@ -110,8 +110,12 @@
     "sortByStatusDesc": "Group jobs by their current status",
     "allJobs": "All Jobs",
     "allJobsDesc": "Show all your posted jobs",
+    "needsAttention": "Needs Your Attention",
+    "needsAttentionDesc": "Jobs requiring immediate action",
     "activeJobs": "Active Jobs",
     "activeJobsDesc": "Jobs that are open or in progress",
+    "openJobs": "Open Jobs",
+    "openJobsDesc": "Jobs waiting for contractors to apply",
     "completedJobs": "Completed Jobs",
     "completedJobsDesc": "Jobs that have been finished",
     "jobsWithApplications": "Jobs with Applications",
@@ -157,6 +161,7 @@
     "rejectApplication": "Reject Application",
     "sendMessage": "Send Message",
     "confirmRejectApplication": "Are you sure you want to reject this application?",
+    "confirmCancelJob": "Are you sure you want to cancel this job?",
     "applicationMessage": "Application Message",
     "actions": {
       "profile": "Profile",
@@ -189,6 +194,7 @@
     "respondsIn": "Responds in",
     "compare": "Compare",
     "message": "Message",
+    "chatWith": "Chat with {name}",
     "selecting": "Selecting...",
     "earningsOverview": "Earnings Overview",
     "monthlyEarningsDescription": "Your earnings over the past months",
@@ -214,7 +220,9 @@
     "agreedTerms": "Agreed Terms",
     "negotiatedAmount": "Negotiated Amount",
     "additionalTerms": "Additional Terms",
-    "agreedOn": "Agreed on"
+    "agreedOn": "Agreed on",
+    "notYetDiscussed": "Not yet discussed",
+    "notYetDiscussedDescription": "Start a conversation to negotiate terms and budget for this job."
   },
   "jobStatus": {
     "open": "Open",
@@ -222,7 +230,6 @@
     "inProgress": "In Progress",
     "completed": "Completed",
     "cancelled": "Cancelled",
-    "in_review": "In Review",
     "finalized": "Finalized",
     "unknown": "Unknown Status"
   },
@@ -279,7 +286,55 @@
     "applyForJob": "Apply for Job",
     "submitApplication": "Submit your application for this job",
     "jobNotFound": "Job not found",
-    "assignedContractor": "Assigned Contractor"
+    "assignedContractor": "Assigned Contractor",
+    "processing": "Processing...",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "viewApplications": "View Applications",
+    "viewProgress": "View Progress",
+    "editJob": "Edit Job",
+    "messageClient": "Message Client",
+    "messageContractor": "Message Contractor",
+    "saveJob": "Save Job",
+    "promoteJob": "Promote Job",
+    "cancelJob": "Cancel Job",
+    "uploadProgress": "Upload Progress",
+    "awaitingApproval": "Awaiting Approval",
+    "requestChanges": "Request Changes",
+    "moreActions": "More Actions",
+    "applying": "Applying...",
+    "needsImmediateAttention": "Needs immediate attention",
+    "reviewApplications": "Review applications",
+    "waitingForApplications": "Waiting for applications",
+    "contractorWillStart": "Contractor will start soon",
+    "workInProgress": "Work in progress",
+    "reviewRequired": "Review required",
+    "approvalRequired": "Approval required",
+    "progress": {
+      "assigned": "Assigned to contractor",
+      "inProgress": "Work in progress",
+      "completed": "Work completed",
+      "inReview": "Under review"
+    },
+    "attention": {
+      "reviewWork": "Review Work",
+      "finalizeJob": "Finalize Job",
+      "newApplications": "New Applications",
+      "actionRequired": "Action Required",
+      "reviewWorkMessage": "The contractor has completed the work and it's ready for your review.",
+      "finalizeJobMessage": "Please review and finalize this job to complete the process.",
+      "newApplicationsMessage": "{count} new applications received for this job.",
+      "actionRequiredMessage": "This job requires your immediate attention."
+    },
+    "reviewNow": "Review Now",
+    "finalizeNow": "Finalize Now",
+    "takeAction": "Take Action",
+    "quickStatusChange": "Quick Status Change",
+    "statusChangeHint": "Update job status with one tap",
+    "jobInProgress": "Job In Progress",
+    "markCompletedHint": "Mark as completed when work is finished",
+    "markInProgress": "Mark In Progress",
+    "markCompleted": "Mark Completed"
   },
   "locationSelection": {
     "doneButton": "Done"
@@ -418,7 +473,8 @@
     "viewReceipt": "View Receipt",
     "historyError": "Failed to load payment history: {error}",
     "refundNotImplemented": "Refund request functionality will be implemented soon.",
-    "receiptNotImplemented": "Receipt viewing functionality will be implemented soon."
+    "receiptNotImplemented": "Receipt viewing functionality will be implemented soon.",
+    "payNow": "Pay Now"
   },
   "profile": {
     "title": "My Profile",

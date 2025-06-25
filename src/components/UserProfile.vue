@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-md mx-auto text-card-foreground p-6">
+  <div class="w-full max-w-md mx-auto text-card-foreground p-6 bg-transparent">
     <!-- Profile Header -->
     <div class="flex flex-col items-center mb-6">
       <!-- Profile Picture -->

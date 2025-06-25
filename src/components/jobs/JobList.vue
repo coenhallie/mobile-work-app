@@ -217,22 +217,7 @@
             </span>
           </div>
 
-          <!-- Action Buttons -->
-          <div
-            v-if="showActions"
-            class="flex items-center justify-between pr-4 pl-0"
-          >
-            <div class="flex items-center space-x-2">
-              <!-- Job Action Button -->
-              <JobActionButton
-                :job="job"
-                :user-role="userRole"
-                @action="$emit('action', $event, job.id)"
-                @applied="$emit('applied', $event)"
-                @application-error="$emit('application-error', $event)"
-              />
-            </div>
-          </div>
+          <!-- No action buttons -->
         </div>
       </Card>
     </div>

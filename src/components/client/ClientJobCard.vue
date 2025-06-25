@@ -2,7 +2,7 @@
   <BaseJobCard
     :job="job"
     :card-class="[
-      'client-job-card group overflow-hidden', // Added group for hover effects and overflow-hidden for image
+      'client-job-card group overflow-hidden transition-all duration-200',
       job.status === 'completed' ? 'opacity-75' : '',
       viewMode === 'list'
         ? 'rounded-lg shadow-sm hover:shadow-md'
@@ -81,52 +81,7 @@
     </template>
 
     <template #quick-actions>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          class="inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0 bg-card/80 hover:bg-card text-white"
-        >
-          <MoreVertical class="w-4 h-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem @click.stop="$emit('view-details', job)">
-            <Eye class="w-4 h-4 mr-2" />
-            {{ $t('common.viewDetails') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            v-if="job.status !== 'completed'"
-            @click.stop="$emit('edit-job', job)"
-          >
-            <Edit class="w-4 h-4 mr-2" />
-            {{ $t('common.edit') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            v-if="(job.applicant_count || 0) > 0"
-            @click.stop="$emit('view-applications', job)"
-          >
-            <Users class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.viewApplications') }}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator
-            v-if="job.status === 'in_progress'"
-            class="my-0"
-          />
-          <DropdownMenuItem
-            v-if="job.status === 'in_progress'"
-            @click.stop="$emit('mark-completed', job)"
-          >
-            <CheckCircle class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.markCompleted') }}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator class="my-0" />
-          <DropdownMenuItem
-            @click.stop="$emit('delete-job', job)"
-            class="text-destructive focus:text-destructive"
-          >
-            <Trash2 class="w-4 h-4 mr-2" />
-            {{ $t('common.delete') }}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <!-- No dropdown menu - simplified interface -->
     </template>
 
     <!-- Content below the image header starts here -->
@@ -256,21 +211,7 @@
     </template>
 
     <template #actions>
-      <div class="flex items-center justify-end pb-1">
-        <div class="flex items-center gap-2">
-          <Button
-            v-if="job.status === 'open' && (job.applicant_count || 0) === 0"
-            variant="outline"
-            size="sm"
-            @click.stop="$emit('edit-job', job)"
-            class="h-8 px-3 text-xs"
-          >
-            <Edit class="w-3 h-3 mr-1.5" />
-            {{ $t('common.edit') }}
-          </Button>
-          <!-- Fallback "View Details" button removed as the card itself is clickable -->
-        </div>
-      </div>
+      <!-- No action buttons -->
     </template>
 
     <!-- Bulk Message Modal (remains unchanged) -->
@@ -290,33 +231,20 @@ import { useI18n } from 'vue-i18n';
 import BaseJobCard from '@/components/shared/BaseJobCard.vue';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  MoreVertical,
   Eye,
   Edit,
   Users,
-  CheckCircle,
-  Trash2,
   Calendar,
   ChevronRight,
   ChevronDown,
-  // MessageCircle, // Not used directly in template after changes
-  // Briefcase, // Not used
 } from 'lucide-vue-next';
 import JobImageCarousel from '@/components/jobs/JobImageCarousel.vue';
 import BulkMessageModal from './BulkMessageModal.vue';
 import JobLocationDisplay from '@/components/shared/JobLocationDisplay.vue';
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import CompactApplicantCard from './CompactApplicantCard.vue';
+import JobActionButton from '@/components/jobs/JobActionButton.vue';
 import { formatStandardDate, formatStandardDateTime } from '@/lib/timeUtils';
-// Card import is no longer needed as BaseJobCard uses it internally
-// import { Card } from '@/components/ui/card';
 
 const { t } = useI18n();
 
@@ -329,7 +257,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  // viewMode is no longer used for styling the card itself as much
   viewMode: {
     type: String,
     default: 'cards',
@@ -344,10 +271,35 @@ const emit = defineEmits([
   'delete-job',
   'view-applicant-details',
   'select-contractor',
+  'job-action',
 ]);
 
 const showBulkMessage = ref(false);
 const showApplications = ref(false);
+
+// Simplified urgency level for enhanced JobActionButton
+const getSimpleUrgencyLevel = () => {
+  if (props.job.is_urgent || props.job.isUrgent) return 'urgent';
+  if (props.job.status === 'completed') {
+    return 'high';
+  }
+  if ((props.job.applicant_count || 0) > 0 && props.job.status === 'open') {
+    return 'high';
+  }
+  if (props.job.status === 'assigned') return 'normal';
+  return 'normal';
+};
+
+const handleAction = (action) => {
+  // Emit specific events for actions that are handled by parent components
+  if (action === 'viewApplications') {
+    emit('view-applications', props.job);
+  } else if (action === 'edit') {
+    emit('edit-job', props.job);
+  } else {
+    emit('job-action', action, props.job.id);
+  }
+};
 
 // Computed properties
 const applicationStats = computed(() => {
@@ -365,11 +317,6 @@ const applicationStats = computed(() => {
 
   return stats;
 });
-
-// openBulkMessage is not called from the template anymore, can be removed if not used elsewhere
-// const openBulkMessage = () => {
-//   showBulkMessage.value = true;
-// };
 
 const handleMessageSent = () => {
   showBulkMessage.value = false;
@@ -399,7 +346,7 @@ const getStatusLabel = (status) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis; /* Added for better truncation */
+  text-overflow: ellipsis;
 }
 
 /* Ensure the carousel image takes the full width of the card header, breaking out of p-4 */
@@ -409,15 +356,5 @@ const getStatusLabel = (status) => {
 /* Hover effect is now primarily handled by BaseJobCard or specific overrides if needed */
 /* .client-job-card:hover { ... } */
 
-/* Ensure dropdown trigger is visible on image */
-/* These styles might need to be adjusted if they conflict with BaseJobCard or applied more locally if still needed */
-.bg-card\/80 {
-  /* More generic selector if this style is for the trigger */
-  background-color: hsla(var(--card), 0.8);
-}
-.hover\:bg-card:hover {
-  /* Ensure specificity if needed */
-  /* More generic selector */
-  background-color: hsl(var(--card));
-}
+/* Simplified card styles without dropdown menu */
 </style>

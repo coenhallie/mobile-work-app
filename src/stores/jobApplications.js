@@ -398,8 +398,18 @@ export const useJobApplicationsStore = defineStore('jobApplications', () => {
       // STEP 6: Create chat room for job communication
 
       let chatCreated = false;
+      let chatError = null;
       try {
         if (jobData) {
+          console.log(
+            '[JobApplicationsStore] Creating chat room for job assignment:',
+            {
+              jobId,
+              contractorId: applicationData.contractor_user_id,
+              clientId: jobData.posted_by_user_id,
+            }
+          );
+
           // Import chat store dynamically to avoid circular dependencies
           const { useChatStore } = await import('./chat.js');
           const chatStore = useChatStore();
@@ -410,16 +420,31 @@ export const useJobApplicationsStore = defineStore('jobApplications', () => {
             jobData.posted_by_user_id
           );
 
-          // Send initial welcome message as if sent by the contractor
-          // This way it appears in the contractor's chat but not as sent by the client
+          console.log(
+            '[JobApplicationsStore] Chat room created successfully:',
+            chatRoom
+          );
+
+          // Get contractor name for the welcome message
+          const { data: contractorProfile } = await getSupabase()
+            .from('contractor_profiles')
+            .select('full_name')
+            .eq('id', applicationData.contractor_user_id)
+            .single();
+
+          const contractorName = contractorProfile?.full_name || 'Contractor';
+
+          // Send initial welcome message with job context
           const { error: messageError } = await getSupabase()
             .from('chat_messages')
             .insert([
               {
                 room_id: chatRoom.id,
-                sender_user_id: applicationData.contractor_user_id, // Contractor sends to themselves
+                sender_user_id: applicationData.contractor_user_id,
                 content: `🎉 Great news! I've been selected for this job. Let's discuss the details and get started!`,
-                sender_name: 'System Notification',
+                sender_name: contractorName,
+                job_reference_id: jobId,
+                job_context: `${updatedJob.category_name} - ${updatedJob.description}`,
                 created_at: new Date().toISOString(),
               },
             ]);
@@ -429,14 +454,25 @@ export const useJobApplicationsStore = defineStore('jobApplications', () => {
               '[JobApplicationsStore] Error sending system message:',
               messageError
             );
-            // Don't throw here as the main operation succeeded
+            // Store error but don't fail the main operation
+            chatError = messageError;
+          } else {
+            console.log(
+              '[JobApplicationsStore] Welcome message sent successfully'
+            );
           }
 
           chatCreated = true;
         }
-      } catch (chatError) {
-        console.error('[JobApplicationsStore] Error creating chat:', chatError);
-        // Don't throw here as the main operation succeeded
+      } catch (error) {
+        console.error(
+          '[JobApplicationsStore] CRITICAL: Chat room creation failed:',
+          error
+        );
+        chatError = error;
+
+        // This is a critical issue - we should notify the user
+        // Store the error to be reported in the response
       }
 
       // STEP 7: Refresh local application data
@@ -467,6 +503,7 @@ export const useJobApplicationsStore = defineStore('jobApplications', () => {
         updatedJob: updatedJob,
         updatedApplication: updatedApplication,
         chatCreated: chatCreated,
+        chatError: chatError,
       };
     } catch (err) {
       console.error(

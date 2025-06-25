@@ -820,9 +820,138 @@ export const useChatStore = defineStore('chat', () => {
       throw new Error('Contractor ID and client ID are required');
     }
 
+    console.log('[ChatStore] Creating job chat room:', {
+      jobId,
+      contractorId,
+      clientId,
+    });
+
     // Create general room between contractor and client
     // Job context will be added to individual messages when needed
-    return await createOrGetChatRoom(contractorId, clientId);
+    const roomId = await createOrGetChatRoom(contractorId, clientId);
+
+    console.log('[ChatStore] Job chat room created/retrieved:', roomId);
+
+    return { id: roomId };
+  };
+
+  /**
+   * Utility function to create missing chat rooms for assigned jobs
+   * This can be used to recover from situations where chat room creation failed
+   */
+  const createMissingChatRoomsForAssignedJobs = async () => {
+    console.log('[ChatStore] Checking for assigned jobs without chat rooms...');
+
+    return executeWithAuth(async (supabase) => {
+      // Find all assigned jobs that don't have chat rooms
+      const { data: assignedJobs, error: jobsError } = await supabase
+        .from('job_postings')
+        .select(
+          `
+          id,
+          posted_by_user_id,
+          selected_contractor_id,
+          category_name,
+          description,
+          status
+        `
+        )
+        .eq('status', 'assigned')
+        .not('selected_contractor_id', 'is', null);
+
+      if (jobsError) {
+        throw new Error(`Failed to fetch assigned jobs: ${jobsError.message}`);
+      }
+
+      if (!assignedJobs || assignedJobs.length === 0) {
+        console.log('[ChatStore] No assigned jobs found');
+        return { created: 0, errors: [] };
+      }
+
+      console.log(
+        `[ChatStore] Found ${assignedJobs.length} assigned jobs, checking for missing chat rooms...`
+      );
+
+      const results = {
+        created: 0,
+        errors: [],
+      };
+
+      for (const job of assignedJobs) {
+        try {
+          // Check if chat room already exists
+          const { data: existingRoom } = await supabase
+            .from('chat_rooms')
+            .select('id')
+            .eq('contractor_id', job.selected_contractor_id)
+            .eq('client_id', job.posted_by_user_id)
+            .eq('job_id', null) // General rooms have job_id as null
+            .single();
+
+          if (existingRoom) {
+            console.log(
+              `[ChatStore] Chat room already exists for job ${job.id}`
+            );
+            continue;
+          }
+
+          // Create missing chat room
+          console.log(
+            `[ChatStore] Creating missing chat room for job ${job.id}`
+          );
+
+          const roomId = await createJobChatRoom(
+            job.id,
+            job.selected_contractor_id,
+            job.posted_by_user_id
+          );
+
+          // Get contractor name for welcome message
+          const { data: contractorProfile } = await supabase
+            .from('contractor_profiles')
+            .select('full_name')
+            .eq('id', job.selected_contractor_id)
+            .single();
+
+          const contractorName = contractorProfile?.full_name || 'Contractor';
+
+          // Add welcome message
+          await supabase.from('chat_messages').insert([
+            {
+              room_id: roomId.id,
+              sender_user_id: job.selected_contractor_id,
+              content: `🎉 Great news! I've been selected for this job. Let's discuss the details and get started!`,
+              sender_name: contractorName,
+              job_reference_id: job.id,
+              job_context: `${job.category_name} - ${job.description}`,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+
+          results.created++;
+          console.log(
+            `[ChatStore] Successfully created chat room for job ${job.id}`
+          );
+        } catch (error) {
+          console.error(
+            `[ChatStore] Failed to create chat room for job ${job.id}:`,
+            error
+          );
+          results.errors.push({
+            jobId: job.id,
+            error: error.message,
+          });
+        }
+      }
+
+      // Refresh chat rooms if any were created
+      if (results.created > 0) {
+        await fetchChatRooms(true);
+      }
+
+      console.log(`[ChatStore] Chat room recovery complete:`, results);
+      return results;
+    }, true);
   };
 
   /**
@@ -1574,6 +1703,33 @@ export const useChatStore = defineStore('chat', () => {
         .eq('posted_by_user_id', currentUserId.value)
         .eq('job_applications.contractor_user_id', otherUserId);
 
+      // Also fetch jobs where current user is client and other user is directly assigned
+      const { data: assignedClientJobs, error: assignedClientError } =
+        await supabase
+          .from('job_postings')
+          .select(
+            `
+          id,
+          category_name,
+          description,
+          photos,
+          service_id,
+          created_at
+        `
+          )
+          .eq('posted_by_user_id', currentUserId.value)
+          .eq('selected_contractor_id', otherUserId);
+
+      console.log(
+        '[ChatStore] fetchSharedJobs - DIAGNOSTIC - Assigned client jobs query result:',
+        {
+          assignedClientJobs,
+          assignedClientJobsCount: assignedClientJobs?.length || 0,
+          assignedClientError,
+          jobIds: assignedClientJobs?.map((job) => job.id) || [],
+        }
+      );
+
       console.log(
         '[ChatStore] fetchSharedJobs - DIAGNOSTIC - Client jobs query result:',
         {
@@ -1616,6 +1772,8 @@ export const useChatStore = defineStore('chat', () => {
                 details: applicationError.details,
               }
             : null,
+          applicationJobIds: applicationData?.map((app) => app.job_id) || [],
+          fullApplicationData: applicationData || [],
         }
       );
 
@@ -1673,6 +1831,32 @@ export const useChatStore = defineStore('chat', () => {
         );
       }
 
+      // Also check for jobs where current user is directly assigned as contractor
+      const { data: assignedContractorJobs, error: assignedContractorError } =
+        await supabase
+          .from('job_postings')
+          .select(
+            `
+          id,
+          category_name,
+          description,
+          photos,
+          service_id,
+          created_at
+        `
+          )
+          .eq('posted_by_user_id', otherUserId)
+          .eq('selected_contractor_id', currentUserId.value);
+
+      console.log(
+        '[ChatStore] fetchSharedJobs - DIAGNOSTIC - Assigned contractor jobs query result:',
+        {
+          assignedContractorJobs,
+          assignedContractorJobsCount: assignedContractorJobs?.length || 0,
+          assignedContractorError,
+        }
+      );
+
       if (clientError && contractorError) {
         console.error(
           '[ChatStore] fetchSharedJobs - DIAGNOSTIC - Both queries failed:',
@@ -1697,14 +1881,21 @@ export const useChatStore = defineStore('chat', () => {
 
       const allJobs = [
         ...(clientJobs || []).map(processJob),
+        ...(assignedClientJobs || []).map(processJob),
         ...(contractorJobs || []).map(processJob),
+        ...(assignedContractorJobs || []).map(processJob),
       ];
 
       console.log('[ChatStore] fetchSharedJobs - DIAGNOSTIC - Final result:', {
         totalJobs: allJobs.length,
         clientJobsCount: (clientJobs || []).length,
+        assignedClientJobsCount: (assignedClientJobs || []).length,
         contractorJobsCount: (contractorJobs || []).length,
+        assignedContractorJobsCount: (assignedContractorJobs || []).length,
         allJobs,
+        jobIds: allJobs.map((job) => job.id),
+        jobTitles: allJobs.map((job) => job.title),
+        currentUserId: currentUserId.value,
         hasPlumbingJob: allJobs.some((job) =>
           job.category_name?.toLowerCase().includes('plumb')
         ),
@@ -2233,6 +2424,8 @@ export const useChatStore = defineStore('chat', () => {
     sendMessage,
     sendImageMessage,
     createOrGetChatRoom,
+    createJobChatRoom,
+    createMissingChatRoomsForAssignedJobs,
     setCurrentRoom,
     markMessagesAsRead,
     subscribeToMessages,

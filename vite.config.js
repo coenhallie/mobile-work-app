@@ -110,4 +110,16 @@ export default defineConfig({
     __VUE_OPTIONS_API__: false,
     __VUE_PROD_DEVTOOLS__: false,
   },
+
+  // Vitest configuration
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './tests/setup.js',
+    server: {
+      deps: {
+        inline: ['@vue', '@vueuse', 'vue-i18n'],
+      },
+    },
+  },
 });

@@ -456,7 +456,7 @@
                   :is-job-owner="isJobOwner"
                   :user-role="userRole"
                   :job-id="jobStore.currentJob.id"
-                  :chat-room-id="jobStore.currentJob.chatRoomId"
+                  :chat-room-id="chatRoomId"
                   @view-profile="handleViewProfile"
                   @start-conversation="handleStartConversation"
                   @phone-call="handlePhoneCall"
@@ -530,7 +530,7 @@
         v-if="
           userRole === 'contractor' && jobStore.currentJob.status === 'open'
         "
-        class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-border p-4 z-[90]"
+        class="fixed bottom-16 md:bottom-0 left-0 right-0 backdrop-blur-sm border-t border-border p-4 z-[90]"
       >
         <div class="max-w-6xl mx-auto flex items-center justify-between">
           <div v-if="jobStore.currentJob.budget" class="hidden sm:block">
@@ -574,7 +574,7 @@
           isJobOwner &&
           jobStore.currentJob.status === 'open'
         "
-        class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-border p-4 z-[90] lg:hidden"
+        class="fixed bottom-16 md:bottom-0 left-0 right-0 backdrop-blur-sm border-t border-border p-4 z-[90] lg:hidden"
       >
         <div class="max-w-6xl mx-auto flex space-x-3">
           <Button
@@ -599,11 +599,10 @@
         v-else-if="
           userRole === 'client' &&
           isJobOwner &&
-          (jobStore.currentJob.status === 'completed' ||
-            jobStore.currentJob.status === 'in_review') &&
+          jobStore.currentJob.status === 'completed' &&
           paymentStatus === 'unpaid'
         "
-        class="fixed bottom-16 md:bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-border p-4 z-[90] lg:hidden"
+        class="fixed bottom-16 md:bottom-0 left-0 right-0 backdrop-blur-sm border-t border-border p-4 z-[90] lg:hidden"
       >
         <div class="max-w-6xl mx-auto">
           <Button
@@ -627,6 +626,127 @@
             </svg>
             {{ $t('payment.payNow') }} - S/ {{ jobStore.currentJob.budget }}
           </Button>
+        </div>
+      </div>
+
+      <!-- Sticky bottom status change bar for assigned jobs -->
+      <div
+        v-else-if="
+          userRole === 'client' &&
+          isJobOwner &&
+          jobStore.currentJob.status === 'assigned' &&
+          jobStore.currentJob.selected_contractor_id
+        "
+        class="fixed bottom-16 md:bottom-0 left-0 right-0 backdrop-blur-sm border-t border-border p-4 z-[90] shadow-lg"
+      >
+        <div class="max-w-6xl mx-auto">
+          <!-- Status Change Header -->
+          <div class="mb-3 text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ $t('jobs.quickStatusChange') }}
+            </p>
+          </div>
+
+          <!-- Status Change Buttons -->
+          <div class="flex space-x-3">
+            <Button
+              @click="handleMarkInProgress"
+              class="flex-1 font-semibold py-4 px-6 rounded-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
+              size="lg"
+            >
+              <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              {{ $t('jobs.markInProgress') }}
+            </Button>
+
+            <Button
+              @click="handleMarkCompleted"
+              class="flex-1 font-semibold py-4 px-6 rounded-xl transition-all duration-200 bg-green-600 hover:bg-green-700 text-white"
+              size="lg"
+            >
+              <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              {{ $t('jobs.markCompleted') }}
+            </Button>
+          </div>
+
+          <!-- Additional Info -->
+          <div class="mt-2 text-center">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ $t('jobs.statusChangeHint') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky bottom status change bar for in-progress jobs -->
+      <div
+        v-else-if="
+          userRole === 'client' &&
+          isJobOwner &&
+          jobStore.currentJob.status === 'in_progress' &&
+          jobStore.currentJob.selected_contractor_id
+        "
+        class="fixed bottom-16 md:bottom-0 left-0 right-0 backdrop-blur-sm border-t border-border p-4 z-[90] shadow-lg"
+      >
+        <div class="max-w-6xl mx-auto">
+          <!-- Status Change Header -->
+          <div class="mb-3 text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ $t('jobs.jobInProgress') }}
+            </p>
+          </div>
+
+          <!-- Complete Job Button -->
+          <Button
+            @click="handleMarkCompleted"
+            class="w-full font-semibold py-4 px-6 rounded-xl transition-all duration-200 bg-green-600 hover:bg-green-700 text-white"
+            size="lg"
+          >
+            <svg
+              class="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            {{ $t('jobs.markCompleted') }}
+          </Button>
+
+          <!-- Additional Info -->
+          <div class="mt-2 text-center">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ $t('jobs.markCompletedHint') }}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -739,6 +859,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useJobStore, JOB_STATUS, isValidUUID } from '../stores/job';
 import { useJobApplicationsStore } from '../stores/jobApplications';
+import { useChatStore } from '../stores/chat';
 import { useAuth } from '@/composables/useAuth';
 import { formatApplicationTime } from '@/lib/timeUtils';
 import { Button } from '@/components/ui/button';
@@ -765,6 +886,7 @@ const route = useRoute();
 const router = useRouter();
 const jobStore = useJobStore();
 const jobApplicationsStore = useJobApplicationsStore();
+const chatStore = useChatStore();
 
 // FIXED: Use auth composable directly without local client management
 const { user, isLoaded, isSignedIn, getSupabaseClient, getToken } = useAuth();
@@ -1014,8 +1136,6 @@ const statusBadgeClass = (status) => {
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
     case 'completed':
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    case 'in_review':
-      return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200';
     case 'finalized':
       return 'bg-muted text-foreground';
     case 'cancelled':
@@ -1229,6 +1349,18 @@ const applicationButtonText = computed(() => {
   return formatApplicationTime(applicationDetails.value.appliedAt, locale);
 });
 
+// Computed property to get chat room ID for budget proposals
+const chatRoomId = computed(() => {
+  // Try to get from job data first
+  if (jobStore.currentJob?.chatRoomId) {
+    return jobStore.currentJob.chatRoomId;
+  }
+
+  // If not available, we'll need to create/get it when needed
+  // For now, return null and let the component handle it
+  return null;
+});
+
 // Function to handle application submission
 const onApplicationSubmitted = async () => {
   showApplicationForm.value = false;
@@ -1326,6 +1458,13 @@ const onApplicantSelected = async (selectionData) => {
     if (chatCreated) {
       successMessage +=
         '\n\n💬 A chat conversation has been automatically started with the selected contractor. You can find it in your Messages.';
+    } else if (selectionData.chatError) {
+      successMessage +=
+        '\n\n⚠️ Note: There was an issue creating the chat room. You may need to manually start a conversation with the contractor.';
+      console.error(
+        '[JobDetailsView] Chat creation failed:',
+        selectionData.chatError
+      );
     }
 
     console.log('[JobDetailsView] Showing success message:', successMessage);
@@ -1345,13 +1484,201 @@ const onApplicantSelected = async (selectionData) => {
 };
 
 // Function to handle job action events from JobActionButton
-const handleJobAction = (action) => {
-  if (action === 'remove') {
-    console.log(
-      `[JobDetailsView] Remove job requested for job ID: ${jobId.value}`
-    );
-    // Open the remove confirmation dialog
-    isRemoveDialogOpen.value = true;
+const handleJobAction = async (action) => {
+  console.log(
+    `[JobDetailsView] Handling job action: ${action} for job ID: ${jobId.value}`
+  );
+
+  try {
+    switch (action) {
+      case 'start':
+        await handleJobStart();
+        break;
+      case 'complete':
+        await handleJobComplete();
+        break;
+      case 'review':
+        await handleJobReview();
+        break;
+      case 'finalize':
+        await handleJobFinalize();
+        break;
+      case 'cancel':
+        openCancelDialog();
+        break;
+      case 'remove':
+        console.log(
+          `[JobDetailsView] Remove job requested for job ID: ${jobId.value}`
+        );
+        isRemoveDialogOpen.value = true;
+        break;
+      case 'view':
+      case 'viewDetails':
+        // Already on job details view, no action needed
+        console.log(
+          `[JobDetailsView] View details action - already on details view`
+        );
+        break;
+      case 'viewApplications':
+        // Scroll to applications section or show applications modal
+        console.log(`[JobDetailsView] View applications action`);
+        scrollToApplications();
+        break;
+      case 'viewProgress':
+        // Scroll to progress section or show progress modal
+        console.log(`[JobDetailsView] View progress action`);
+        scrollToProgress();
+        break;
+      case 'edit':
+      case 'editJob':
+        // Navigate to edit job page or show edit modal
+        console.log(`[JobDetailsView] Edit job action`);
+        handleEditJob();
+        break;
+      case 'message':
+      case 'messageClient':
+      case 'messageContractor':
+        // Open messaging interface
+        console.log(`[JobDetailsView] Message action`);
+        handleOpenMessage();
+        break;
+      case 'save':
+      case 'saveJob':
+        // Save job to favorites/bookmarks
+        console.log(`[JobDetailsView] Save job action`);
+        handleSaveJob();
+        break;
+      case 'promote':
+      case 'promoteJob':
+        // Promote job (boost visibility)
+        console.log(`[JobDetailsView] Promote job action`);
+        handlePromoteJob();
+        break;
+      case 'upload':
+      case 'uploadProgress':
+        // Upload progress photos/documents
+        console.log(`[JobDetailsView] Upload progress action`);
+        handleUploadProgress();
+        break;
+      case 'requestChanges':
+        // Request changes to completed work
+        console.log(`[JobDetailsView] Request changes action`);
+        handleRequestChanges();
+        break;
+      case 'apply':
+        // Handle job application
+        console.log(`[JobDetailsView] Apply action`);
+        showApplicationForm.value = true;
+        break;
+      default:
+        console.warn(`[JobDetailsView] Unknown action: ${action}`);
+    }
+  } catch (error) {
+    console.error(`[JobDetailsView] Error handling ${action} action:`, error);
+    alert(`Error ${action}ing job: ${error.message}`);
+  }
+};
+
+// Helper functions for new actions
+const scrollToApplications = () => {
+  const applicationsSection = document.querySelector('.applications-section');
+  if (applicationsSection) {
+    applicationsSection.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const scrollToProgress = () => {
+  const progressSection = document.querySelector('.progress-section');
+  if (progressSection) {
+    progressSection.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const handleEditJob = () => {
+  // Navigate to edit job page
+  router.push(`/jobs/${jobId.value}/edit`);
+};
+
+const handleOpenMessage = () => {
+  // Open messaging interface - could be a modal or navigate to messages
+  console.log('[JobDetailsView] Opening message interface');
+  // For now, just log - implement messaging interface as needed
+};
+
+const handleSaveJob = async () => {
+  try {
+    // Implement save job to favorites functionality
+    console.log('[JobDetailsView] Saving job to favorites');
+    // Add to job store or user preferences
+  } catch (error) {
+    console.error('[JobDetailsView] Error saving job:', error);
+  }
+};
+
+const handlePromoteJob = () => {
+  // Open promote job modal or navigate to promotion page
+  console.log('[JobDetailsView] Opening job promotion interface');
+  // Implement job promotion functionality
+};
+
+const handleUploadProgress = () => {
+  // Open file upload interface for progress photos/documents
+  console.log('[JobDetailsView] Opening progress upload interface');
+  // Implement file upload functionality
+};
+
+const handleRequestChanges = () => {
+  // Open request changes modal
+  console.log('[JobDetailsView] Opening request changes interface');
+  // Implement request changes functionality
+};
+
+// Job status transition handlers
+const handleJobStart = async () => {
+  console.log(`[JobDetailsView] Starting job ${jobId.value}`);
+  const result = await jobStore.markJobInProgress(jobId.value);
+  if (result.success) {
+    console.log('[JobDetailsView] Job started successfully');
+    // Refresh job data
+    await jobStore.fetchJobById(jobId.value, true);
+  } else {
+    throw new Error(result.error || 'Failed to start job');
+  }
+};
+
+const handleJobComplete = async () => {
+  console.log(`[JobDetailsView] Completing job ${jobId.value}`);
+  const result = await jobStore.markJobCompleted(jobId.value);
+  if (result.success) {
+    console.log('[JobDetailsView] Job completed successfully');
+    // Refresh job data
+    await jobStore.fetchJobById(jobId.value, true);
+  } else {
+    throw new Error(result.error || 'Failed to complete job');
+  }
+};
+
+const handleJobReview = async () => {
+  console.log(`[JobDetailsView] Marking job ${jobId.value} for review`);
+  const result = await jobStore.markJobInReview(jobId.value);
+  if (result.success) {
+    console.log('[JobDetailsView] Job marked for review successfully');
+    // Refresh job data
+    await jobStore.fetchJobById(jobId.value, true);
+  } else {
+    throw new Error(result.error || 'Failed to mark job for review');
+  }
+};
+
+const handleJobFinalize = async () => {
+  console.log(`[JobDetailsView] Finalizing job ${jobId.value}`);
+  const result = await jobStore.finalizeJob(jobId.value);
+  if (result.success) {
+    console.log('[JobDetailsView] Job finalized successfully');
+    // Refresh job data
+    await jobStore.fetchJobById(jobId.value, true);
+  } else {
+    throw new Error(result.error || 'Failed to finalize job');
   }
 };
 
@@ -1561,8 +1888,20 @@ const handleStartConversation = async (contractor) => {
     contractor
   );
   try {
-    // This will be handled by the AssignedContractorCard component itself
-    // The component will create the chat room and navigate to it
+    // Get contractor ID from job data
+    const contractorId = jobStore.currentJob.selected_contractor_id;
+
+    if (!contractorId) {
+      console.error('[JobDetailsView] No contractor ID available in job data');
+      alert(
+        'Unable to start conversation. Contractor information not available.'
+      );
+      return;
+    }
+
+    // Create chat room and navigate
+    const roomId = await chatStore.createOrGetChatRoom(contractorId);
+    await router.push(`/messages/${roomId}`);
   } catch (error) {
     console.error('[JobDetailsView] Error starting conversation:', error);
     alert('Failed to start conversation. Please try again.');
@@ -1584,24 +1923,21 @@ const handleMarkInProgress = async (contractor) => {
     contractor
   );
   try {
-    // Update job status to in_progress
-    const { error } = await getSupabase()
-      .from('jobs')
-      .update({ status: 'in_progress' })
-      .eq('id', jobId.value);
+    // Use the job store method to update status
+    const result = await jobStore.markJobInProgress(jobId.value);
 
-    if (error) {
+    if (result.success) {
+      console.log('[JobDetailsView] Job marked as in progress successfully');
+      // Refresh job data
+      await jobStore.fetchJobById(jobId.value, true);
+      alert('Job status updated to "In Progress"');
+    } else {
       console.error(
-        '[JobDetailsView] Error updating job status to in_progress:',
-        error
+        '[JobDetailsView] Failed to mark job in progress:',
+        result.error
       );
-      alert('Failed to update job status. Please try again.');
-      return;
+      alert(`Failed to update job status: ${result.error || 'Unknown error'}`);
     }
-
-    // Refresh job data
-    await jobStore.fetchJobById(jobId.value, true);
-    alert('Job status updated to "In Progress"');
   } catch (error) {
     console.error('[JobDetailsView] Error marking job in progress:', error);
     alert('Failed to update job status. Please try again.');
@@ -1614,24 +1950,21 @@ const handleMarkCompleted = async (contractor) => {
     contractor
   );
   try {
-    // Update job status to completed
-    const { error } = await getSupabase()
-      .from('jobs')
-      .update({ status: 'completed' })
-      .eq('id', jobId.value);
+    // Use the job store method to update status
+    const result = await jobStore.markJobCompleted(jobId.value);
 
-    if (error) {
+    if (result.success) {
+      console.log('[JobDetailsView] Job marked as completed successfully');
+      // Refresh job data
+      await jobStore.fetchJobById(jobId.value, true);
+      alert('Job status updated to "Completed"');
+    } else {
       console.error(
-        '[JobDetailsView] Error updating job status to completed:',
-        error
+        '[JobDetailsView] Failed to mark job completed:',
+        result.error
       );
-      alert('Failed to update job status. Please try again.');
-      return;
+      alert(`Failed to update job status: ${result.error || 'Unknown error'}`);
     }
-
-    // Refresh job data
-    await jobStore.fetchJobById(jobId.value, true);
-    alert('Job status updated to "Completed"');
   } catch (error) {
     console.error('[JobDetailsView] Error marking job completed:', error);
     alert('Failed to update job status. Please try again.');

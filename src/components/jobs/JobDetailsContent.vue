@@ -73,14 +73,9 @@
         </Button>
       </div>
 
-      <!-- Actions for cancelled jobs -->
+      <!-- No actions for cancelled jobs -->
       <div v-else-if="job.status === JOB_STATUS.CANCELLED">
-        <JobActionButton
-          :job="job"
-          :userRole="userRole"
-          :isJobDetailsView="true"
-          @action="$emit('action', $event)"
-        />
+        <!-- No action buttons -->
       </div>
 
       <!-- Display apply error message -->
@@ -162,8 +157,6 @@ const statusBadgeClass = (status) => {
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
     case 'completed':
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    case 'in_review':
-      return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200';
     case 'finalized':
       return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
     case 'cancelled':

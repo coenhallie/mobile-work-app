@@ -3,9 +3,152 @@
     <Transition name="fade" mode="out-in">
       <div :key="activeView">
         <!-- Loading State -->
-        <div v-if="isLoading" class="space-y-3">
-          <div v-for="i in 3" :key="i" class="animate-pulse">
-            <div class="bg-gray-100 dark:bg-gray-800 h-20 rounded-lg"></div>
+        <div v-if="isLoading">
+          <!-- Grid View Skeleton (Cards) -->
+          <div v-if="viewMode === 'cards'" class="grid grid-cols-2 gap-3">
+            <div v-for="i in 4" :key="i" class="animate-pulse">
+              <!-- Job Card Skeleton -->
+              <div
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+              >
+                <!-- Image Header Skeleton -->
+                <div class="relative">
+                  <div class="bg-gray-200 dark:bg-gray-700 h-40 w-full"></div>
+                  <!-- Status Badge Skeleton -->
+                  <div class="absolute top-2 right-2">
+                    <div
+                      class="bg-gray-300 dark:bg-gray-600 h-6 w-16 rounded-full"
+                    ></div>
+                  </div>
+                  <!-- Quick Actions Skeleton -->
+                  <div class="absolute top-2 left-2">
+                    <div
+                      class="bg-gray-300 dark:bg-gray-600 h-8 w-8 rounded-full"
+                    ></div>
+                  </div>
+                  <!-- Title Overlay Skeleton -->
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3"
+                  >
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1">
+                        <div class="bg-gray-300 h-4 w-3/4 rounded mb-1"></div>
+                        <div class="bg-gray-400 h-3 w-1/2 rounded"></div>
+                      </div>
+                      <div class="ml-2">
+                        <div class="bg-gray-300 h-3 w-12 rounded mb-1"></div>
+                        <div class="bg-gray-400 h-2 w-8 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Content Section Skeleton -->
+                <div class="px-4 pb-4 pt-2">
+                  <!-- Description Skeleton -->
+                  <div class="mt-3 space-y-1">
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-3 w-full rounded"
+                    ></div>
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-3 w-4/5 rounded"
+                    ></div>
+                  </div>
+                  <!-- Meta Info Skeleton -->
+                  <div class="mt-3 flex items-center gap-3">
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-3 w-16 rounded"
+                    ></div>
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-3 w-12 rounded"
+                    ></div>
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-3 w-14 rounded"
+                    ></div>
+                  </div>
+                  <!-- Actions Skeleton -->
+                  <div class="mt-3 flex justify-end">
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-8 w-20 rounded"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- List View Skeleton -->
+          <div v-else class="space-y-3">
+            <div v-for="i in 3" :key="i" class="animate-pulse">
+              <!-- Job Card Skeleton -->
+              <div
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+              >
+                <!-- Image Header Skeleton -->
+                <div class="relative">
+                  <div class="bg-gray-200 dark:bg-gray-700 h-32 w-full"></div>
+                  <!-- Status Badge Skeleton -->
+                  <div class="absolute top-2 right-2">
+                    <div
+                      class="bg-gray-300 dark:bg-gray-600 h-6 w-16 rounded-full"
+                    ></div>
+                  </div>
+                  <!-- Quick Actions Skeleton -->
+                  <div class="absolute top-2 left-2">
+                    <div
+                      class="bg-gray-300 dark:bg-gray-600 h-8 w-8 rounded-full"
+                    ></div>
+                  </div>
+                  <!-- Title Overlay Skeleton -->
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3"
+                  >
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1">
+                        <div class="bg-gray-300 h-5 w-3/4 rounded mb-1"></div>
+                        <div class="bg-gray-400 h-3 w-1/2 rounded"></div>
+                      </div>
+                      <div class="ml-2">
+                        <div class="bg-gray-300 h-4 w-16 rounded mb-1"></div>
+                        <div class="bg-gray-400 h-3 w-10 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Content Section Skeleton -->
+                <div class="px-4 pb-4 pt-2">
+                  <!-- Description Skeleton -->
+                  <div class="mt-3 space-y-2">
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-3 w-full rounded"
+                    ></div>
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-3 w-5/6 rounded"
+                    ></div>
+                  </div>
+                  <!-- Meta Info Skeleton -->
+                  <div class="mt-3 flex items-center gap-4">
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-4 w-20 rounded"
+                    ></div>
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-4 w-16 rounded"
+                    ></div>
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-4 w-18 rounded"
+                    ></div>
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-4 w-16 rounded"
+                    ></div>
+                  </div>
+                  <!-- Actions Skeleton -->
+                  <div class="mt-3 flex justify-end">
+                    <div
+                      class="bg-gray-200 dark:bg-gray-700 h-8 w-24 rounded"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

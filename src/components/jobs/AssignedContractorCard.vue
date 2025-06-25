@@ -12,14 +12,18 @@
   />
 
   <!-- Assigned Contractor Card Content -->
-  <Card v-else class="assigned-contractor-card p-0 overflow-hidden" hover>
+  <Card
+    v-else
+    class="assigned-contractor-card p-0 overflow-hidden bg-transparent"
+    hover
+  >
     <!-- Header Section -->
     <div class="flex items-start space-x-4 p-6 pb-4">
       <!-- Profile Image -->
       <div class="relative flex-shrink-0">
         <img
-          v-if="assignedUser?.avatar_url"
-          :src="assignedUser.avatar_url"
+          v-if="contractorImageUrl"
+          :src="contractorImageUrl"
           :alt="`${contractorName}'s profile picture`"
           class="w-16 h-16 rounded-full object-cover border-2 border-border"
           loading="lazy"
@@ -44,7 +48,9 @@
       <!-- Contractor Info -->
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 mb-1">
-          <h3 class="text-xl font-semibold text-foreground truncate">
+          <h3
+            class="text-xl font-semibold text-gray-900 dark:text-white truncate"
+          >
             {{ contractorName }}
           </h3>
           <Badge
@@ -104,44 +110,6 @@
           </span>
         </div>
       </div>
-
-      <!-- Quick Actions Dropdown -->
-      <DropdownMenu v-if="isJobOwner">
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
-            <MoreVertical class="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem @click="viewProfile">
-            <User class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.viewProfile') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem @click="startConversation">
-            <MessageCircle class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.sendMessage') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem @click="makePhoneCall" v-if="assignedUser?.phone">
-            <Phone class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.callContractor') }}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator v-if="showJobActions" />
-          <DropdownMenuItem
-            v-if="jobStatus === 'assigned'"
-            @click="markJobInProgress"
-          >
-            <Play class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.markInProgress') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            v-if="jobStatus === 'in_progress'"
-            @click="markJobCompleted"
-          >
-            <CheckCircle class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.markCompleted') }}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
     </div>
 
     <!-- Skills Section -->
@@ -232,69 +200,31 @@
       </div>
     </div>
 
+    <!-- Not yet discussed section -->
+    <div v-else-if="!isLoadingProposal" class="px-6 pb-4">
+      <Label class="text-sm font-medium mb-2 block text-muted-foreground">
+        {{ $t('dashboard.agreedTerms') }}
+      </Label>
+      <div
+        class="bg-muted/50 border border-dashed border-muted-foreground/30 rounded-lg p-3"
+      >
+        <div class="flex items-center gap-2 mb-1">
+          <MessageCircle class="w-4 h-4 text-muted-foreground" />
+          <span class="text-sm text-muted-foreground">
+            {{ $t('dashboard.notYetDiscussed') }}
+          </span>
+        </div>
+        <p class="text-xs text-muted-foreground">
+          {{ $t('dashboard.notYetDiscussedDescription') }}
+        </p>
+      </div>
+    </div>
+
     <!-- Loading state for budget proposal -->
     <div v-else-if="isLoadingProposal" class="px-6 pb-4">
       <div class="animate-pulse">
         <div class="h-4 bg-muted rounded w-1/3 mb-2"></div>
         <div class="h-16 bg-muted rounded"></div>
-      </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div
-      class="flex items-center justify-between p-6 pt-4 border-t border-border bg-muted/20"
-    >
-      <!-- Status-specific info -->
-      <div class="flex items-center gap-2 text-xs text-muted-foreground">
-        <component :is="jobStatusIcon" class="w-3 h-3" />
-        <span>{{ jobStatusDescription }}</span>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-2">
-        <!-- Message Button -->
-        <Button
-          variant="outline"
-          size="sm"
-          @click="startConversation"
-          :disabled="isCreatingChat"
-          class="min-w-0"
-        >
-          <div
-            v-if="isCreatingChat"
-            class="animate-spin w-4 h-4 mr-1 border-2 border-current border-t-transparent rounded-full"
-          ></div>
-          <MessageCircle v-else class="w-4 h-4 mr-1" />
-          <span class="hidden sm:inline">{{ $t('dashboard.message') }}</span>
-        </Button>
-
-        <Button
-          v-if="assignedUser?.phone"
-          variant="outline"
-          size="sm"
-          @click="makePhoneCall"
-          class="min-w-0"
-        >
-          <Phone class="w-4 h-4 mr-1" />
-          <span class="hidden sm:inline">{{ $t('dashboard.call') }}</span>
-        </Button>
-
-        <!-- Primary Action Button (status-dependent) -->
-        <Button
-          v-if="showPrimaryAction"
-          size="sm"
-          @click="handlePrimaryAction"
-          :disabled="isPerformingAction"
-          :variant="primaryActionVariant"
-          class="min-w-0"
-        >
-          <div
-            v-if="isPerformingAction"
-            class="animate-spin w-4 h-4 mr-1 border-2 border-current border-t-transparent rounded-full"
-          ></div>
-          <component v-else :is="primaryActionIcon" class="w-4 h-4 mr-1" />
-          <span class="truncate">{{ primaryActionText }}</span>
-        </Button>
       </div>
     </div>
   </Card>
@@ -334,11 +264,13 @@ import BaseSkeleton from '@/components/shared/BaseSkeleton.vue';
 import { useChatStore } from '@/stores/chat';
 import { formatDisplayName } from '@/lib/nameFormatter';
 import { useBudgetProposals } from '@/composables/useBudgetProposals';
+import { useAuth } from '@/composables/useAuth';
 
 const { t } = useI18n();
 const router = useRouter();
 const chatStore = useChatStore();
 const budgetProposals = useBudgetProposals();
+const auth = useAuth();
 
 const props = defineProps({
   user: {
@@ -403,6 +335,77 @@ const contractorName = computed(() => {
 
 const contractorSkills = computed(() => {
   return assignedUser.value?.skills || [];
+});
+
+const contractorImageUrl = computed(() => {
+  if (!assignedUser.value) return null;
+
+  // Check for multiple possible image field names, prioritizing the most common ones
+  const imageFields = [
+    'profile_picture_url', // Primary field used in database
+    'avatar_url',
+    'profile_image_url',
+    'image_url',
+    'photo_url',
+    'picture_url',
+    'profile_image',
+    'photo',
+    'picture',
+    'avatar',
+    'profile_photo',
+  ];
+
+  // First check direct fields on the user object
+  for (const field of imageFields) {
+    const imageUrl = assignedUser.value[field];
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim()) {
+      console.log(
+        `[AssignedContractorCard] Found contractor image in field '${field}':`,
+        imageUrl
+      );
+      return imageUrl.trim();
+    }
+  }
+
+  // Check nested contractor_profiles object (common pattern in the app)
+  if (assignedUser.value.contractor_profiles) {
+    for (const field of imageFields) {
+      const imageUrl = assignedUser.value.contractor_profiles[field];
+      if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim()) {
+        console.log(
+          `[AssignedContractorCard] Found contractor image in contractor_profiles.${field}:`,
+          imageUrl
+        );
+        return imageUrl.trim();
+      }
+    }
+  }
+
+  // Check nested profile object
+  if (assignedUser.value.profile) {
+    for (const field of imageFields) {
+      const imageUrl = assignedUser.value.profile[field];
+      if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim()) {
+        console.log(
+          `[AssignedContractorCard] Found contractor image in profile.${field}:`,
+          imageUrl
+        );
+        return imageUrl.trim();
+      }
+    }
+  }
+
+  console.log(
+    '[AssignedContractorCard] No contractor image found in any field. Available fields:',
+    Object.keys(assignedUser.value)
+  );
+  if (assignedUser.value.contractor_profiles) {
+    console.log(
+      '[AssignedContractorCard] contractor_profiles fields:',
+      Object.keys(assignedUser.value.contractor_profiles)
+    );
+  }
+  return null;
 });
 
 const jobStatusVariant = computed(() => {
@@ -472,8 +475,17 @@ const showJobActions = computed(() => {
 });
 
 const showPrimaryAction = computed(() => {
-  if (!props.isJobOwner) return false;
-  return ['assigned', 'in_progress', 'completed'].includes(props.jobStatus);
+  // For clients (job owners): only show action buttons for in_progress and completed jobs
+  if (props.isJobOwner) {
+    return ['in_progress', 'completed'].includes(props.jobStatus);
+  }
+
+  // For contractors: show start job button when assigned, and other actions when appropriate
+  if (props.userRole === 'contractor') {
+    return ['assigned', 'in_progress', 'completed'].includes(props.jobStatus);
+  }
+
+  return false;
 });
 
 const primaryActionVariant = computed(() => {
@@ -538,6 +550,41 @@ const showAgreedTerms = computed(() => {
 
 const fetchContractorData = async () => {
   if (props.user) {
+    console.log('[AssignedContractorCard] User data received:', props.user);
+
+    // Log available image-related fields for debugging
+    const imageFields = [
+      'profile_picture_url', // Primary field used in database
+      'avatar_url',
+      'profile_image_url',
+      'image_url',
+      'photo_url',
+      'picture_url',
+      'profile_image',
+      'photo',
+      'picture',
+      'avatar',
+      'profile_photo',
+    ];
+
+    const availableImageFields = imageFields.filter(
+      (field) => props.user[field]
+    );
+    if (availableImageFields.length > 0) {
+      console.log(
+        '[AssignedContractorCard] Available image fields:',
+        availableImageFields.map((field) => ({
+          field,
+          value: props.user[field],
+        }))
+      );
+    } else {
+      console.log(
+        '[AssignedContractorCard] No image fields found. All user fields:',
+        Object.keys(props.user)
+      );
+    }
+
     assignedUser.value = props.user;
     loading.value = false;
   } else {
@@ -549,18 +596,60 @@ const fetchContractorData = async () => {
 };
 
 const fetchBudgetProposalData = async () => {
+  console.log('[AssignedContractorCard] fetchBudgetProposalData called with:', {
+    jobId: props.jobId,
+    chatRoomId: props.chatRoomId,
+  });
+
   if (!props.jobId) {
+    console.log(
+      '[AssignedContractorCard] No jobId provided, skipping budget proposal fetch'
+    );
     return;
   }
 
   isLoadingProposal.value = true;
   try {
-    const proposal = await budgetProposals.fetchAcceptedBudgetProposal(
-      props.jobId
+    // First, let's try to fetch all budget proposals for debugging
+    const supabase = auth.getSupabaseClient();
+    const { data: allProposals, error: allError } = await supabase
+      .from('budget_proposals')
+      .select('*')
+      .limit(10);
+
+    console.log(
+      '[AssignedContractorCard] All budget proposals (first 10):',
+      allProposals
     );
+    console.log(
+      '[AssignedContractorCard] Error fetching all proposals:',
+      allError
+    );
+
+    // Let's also check proposals for this specific job
+    const { data: jobProposals, error: jobError } = await supabase
+      .from('budget_proposals')
+      .select('*')
+      .eq('job_id', props.jobId);
+
+    console.log(
+      '[AssignedContractorCard] Proposals for this job:',
+      jobProposals
+    );
+    console.log('[AssignedContractorCard] Job proposals error:', jobError);
+
+    // Now try our specific query
+    const proposal = await budgetProposals.fetchAcceptedBudgetProposal(
+      props.jobId,
+      props.chatRoomId
+    );
+    console.log('[AssignedContractorCard] Budget proposal result:', proposal);
     acceptedProposal.value = proposal;
   } catch (error) {
-    console.error('Error fetching budget proposal:', error);
+    console.error(
+      '[AssignedContractorCard] Error fetching budget proposal:',
+      error
+    );
     // Don't set error state as this is optional data
   } finally {
     isLoadingProposal.value = false;
@@ -568,7 +657,93 @@ const fetchBudgetProposalData = async () => {
 };
 
 const handleImageError = (event) => {
+  console.warn(
+    '[AssignedContractorCard] Failed to load contractor image:',
+    event.target.src
+  );
   event.target.style.display = 'none';
+
+  // Force reactivity update to show fallback avatar
+  const currentUser = assignedUser.value;
+  if (currentUser) {
+    // Try to find an alternative image URL if available
+    const imageFields = [
+      'profile_picture_url', // Primary field used in database
+      'avatar_url',
+      'profile_image_url',
+      'image_url',
+      'photo_url',
+      'picture_url',
+      'profile_image',
+      'photo',
+      'picture',
+      'avatar',
+      'profile_photo',
+    ];
+
+    const failedUrl = event.target.src;
+
+    // Check direct fields
+    for (const field of imageFields) {
+      const imageUrl = currentUser[field];
+      if (
+        imageUrl &&
+        imageUrl !== failedUrl &&
+        typeof imageUrl === 'string' &&
+        imageUrl.trim()
+      ) {
+        console.log(
+          `[AssignedContractorCard] Trying alternative image from field '${field}':`,
+          imageUrl
+        );
+        event.target.src = imageUrl.trim();
+        event.target.style.display = 'block';
+        return;
+      }
+    }
+
+    // Check nested contractor_profiles object
+    if (currentUser.contractor_profiles) {
+      for (const field of imageFields) {
+        const imageUrl = currentUser.contractor_profiles[field];
+        if (
+          imageUrl &&
+          imageUrl !== failedUrl &&
+          typeof imageUrl === 'string' &&
+          imageUrl.trim()
+        ) {
+          console.log(
+            `[AssignedContractorCard] Trying alternative image from contractor_profiles.${field}:`,
+            imageUrl
+          );
+          event.target.src = imageUrl.trim();
+          event.target.style.display = 'block';
+          return;
+        }
+      }
+    }
+
+    // Check nested profile object
+    if (currentUser.profile) {
+      for (const field of imageFields) {
+        const imageUrl = currentUser.profile[field];
+        if (
+          imageUrl &&
+          imageUrl !== failedUrl &&
+          typeof imageUrl === 'string' &&
+          imageUrl.trim()
+        ) {
+          console.log(
+            `[AssignedContractorCard] Trying alternative image from profile.${field}:`,
+            imageUrl
+          );
+          event.target.src = imageUrl.trim();
+          event.target.style.display = 'block';
+          return;
+        }
+      }
+    }
+  }
 };
 
 const viewProfile = () => {
@@ -579,15 +754,25 @@ const viewProfile = () => {
 };
 
 const startConversation = async () => {
-  if (!assignedUser.value?.id) {
-    console.error('No contractor ID available');
+  // Try different possible ID field names
+  let contractorId =
+    assignedUser.value?.id ||
+    assignedUser.value?.user_id ||
+    assignedUser.value?.contractor_id;
+
+  // If no ID in user object, delegate to parent component
+  if (!contractorId) {
+    console.log(
+      'No contractor ID in user object, delegating to parent component'
+    );
+    emit('start-conversation', assignedUser.value);
     return;
   }
 
   isCreatingChat.value = true;
   try {
     emit('start-conversation', assignedUser.value);
-    const roomId = await chatStore.createDirectChatRoom(assignedUser.value.id);
+    const roomId = await chatStore.createOrGetChatRoom(contractorId);
     await router.push(`/messages/${roomId}`);
   } catch (error) {
     console.error('Error creating chat room:', error);
@@ -608,13 +793,13 @@ const handlePrimaryAction = async () => {
   try {
     switch (props.jobStatus) {
       case 'assigned':
-        emit('mark-in-progress', contractor.value);
+        emit('mark-in-progress', assignedUser.value);
         break;
       case 'in_progress':
-        emit('mark-completed', contractor.value);
+        emit('mark-completed', assignedUser.value);
         break;
       case 'completed':
-        emit('rate-contractor', contractor.value);
+        emit('rate-contractor', assignedUser.value);
         break;
     }
   } catch (error) {
@@ -627,11 +812,11 @@ const handlePrimaryAction = async () => {
 };
 
 const markJobInProgress = () => {
-  emit('mark-in-progress', contractor.value);
+  emit('mark-in-progress', assignedUser.value);
 };
 
 const markJobCompleted = () => {
-  emit('mark-completed', contractor.value);
+  emit('mark-completed', assignedUser.value);
 };
 
 // Lifecycle

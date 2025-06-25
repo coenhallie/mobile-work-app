@@ -13,9 +13,10 @@ export function useBudgetProposals() {
   /**
    * Fetch accepted budget proposals for a specific job
    * @param {string} jobId - The job ID to fetch proposals for
+   * @param {string} roomId - Optional room ID to also search by
    * @returns {Promise<Object|null>} The accepted proposal or null if none found
    */
-  const fetchAcceptedBudgetProposal = async (jobId) => {
+  const fetchAcceptedBudgetProposal = async (jobId, roomId = null) => {
     if (!jobId) {
       throw new Error('Job ID is required');
     }
@@ -30,23 +31,10 @@ export function useBudgetProposals() {
     try {
       const supabase = auth.getSupabaseClient();
 
-      // Fetch accepted budget proposals for the job
-      const { data, error: fetchError } = await supabase
+      // First try to fetch by job_id
+      let { data, error: fetchError } = await supabase
         .from('budget_proposals')
-        .select(
-          `
-          *,
-          job_postings!job_id(
-            id,
-            title,
-            description,
-            budget_min,
-            budget_max,
-            currency,
-            posted_by_user_id
-          )
-        `
-        )
+        .select('*')
         .eq('job_id', jobId)
         .eq('status', 'accepted')
         .order('created_at', { ascending: false })
@@ -57,6 +45,31 @@ export function useBudgetProposals() {
         throw new Error(
           `Failed to fetch budget proposal: ${fetchError.message}`
         );
+      }
+
+      // If no data found by job_id and we have a room_id, try searching by room_id
+      if (!data && roomId) {
+        console.log(
+          '[useBudgetProposals] No proposal found by job_id, trying room_id:',
+          roomId
+        );
+        const { data: roomData, error: roomError } = await supabase
+          .from('budget_proposals')
+          .select('*')
+          .eq('room_id', roomId)
+          .eq('status', 'accepted')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (roomError) {
+          console.warn(
+            '[useBudgetProposals] Error fetching by room_id:',
+            roomError
+          );
+        } else {
+          data = roomData;
+        }
       }
 
       return data;
@@ -94,20 +107,7 @@ export function useBudgetProposals() {
 
       const { data, error: fetchError } = await supabase
         .from('budget_proposals')
-        .select(
-          `
-          *,
-          job_postings!job_id(
-            id,
-            title,
-            description,
-            budget_min,
-            budget_max,
-            currency,
-            posted_by_user_id
-          )
-        `
-        )
+        .select('*')
         .eq('job_id', jobId)
         .order('created_at', { ascending: false });
 

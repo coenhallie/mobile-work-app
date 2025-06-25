@@ -88,33 +88,7 @@
     </template>
 
     <template #quick-actions>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          class="inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0 bg-card/80 hover:bg-card text-white"
-        >
-          <MoreVertical class="w-4 h-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem @click.stop="$emit('view-details', job)">
-            <Eye class="w-4 h-4 mr-2" />
-            {{ $t('common.viewDetails') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            v-if="!job.isMyJob"
-            @click.stop="$emit('apply-job', job)"
-          >
-            <Send class="w-4 h-4 mr-2" />
-            {{ $t('contractorDashboard.applyNow') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            v-if="job.isMyJob && job.status === 'in_progress'"
-            @click.stop="$emit('mark-completed', job)"
-          >
-            <CheckCircle class="w-4 h-4 mr-2" />
-            {{ $t('dashboard.markCompleted') }}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <!-- No dropdown menu -->
     </template>
 
     <template #description>
@@ -190,34 +164,7 @@
     </template>
 
     <template #actions>
-      <div class="flex items-center justify-between pt-1">
-        <!-- Apply button for opportunities -->
-        <div v-if="!job.isMyJob" class="flex items-center gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            @click.stop="$emit('apply-job', job)"
-            class="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700"
-          >
-            <Send class="w-3 h-3 mr-1.5" />
-            {{ $t('contractorDashboard.applyNow') }}
-          </Button>
-        </div>
-
-        <!-- Status info for contractor's jobs -->
-        <div v-else class="flex items-center gap-2">
-          <Button
-            v-if="job.status === 'in_progress'"
-            variant="outline"
-            size="sm"
-            @click.stop="$emit('mark-completed', job)"
-            class="h-8 px-3 text-xs"
-          >
-            <CheckCircle class="w-3 h-3 mr-1.5" />
-            {{ $t('dashboard.markCompleted') }}
-          </Button>
-        </div>
-      </div>
+      <!-- No action buttons -->
     </template>
   </BaseJobCard>
 </template>

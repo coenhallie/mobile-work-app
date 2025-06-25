@@ -148,8 +148,12 @@
     "sortByStatusDesc": "Agrupar trabajos por su estado actual",
     "allJobs": "Todos los Trabajos",
     "allJobsDesc": "Mostrar todos tus trabajos publicados",
+    "needsAttention": "Necesita Tu Atención",
+    "needsAttentionDesc": "Trabajos que requieren acción inmediata",
     "activeJobs": "Trabajos Activos",
     "activeJobsDesc": "Trabajos que están abiertos o en progreso",
+    "openJobs": "Trabajos Abiertos",
+    "openJobsDesc": "Trabajos esperando que los contratistas apliquen",
     "completedJobs": "Trabajos Completados",
     "completedJobsDesc": "Trabajos que han sido terminados",
     "jobsWithApplications": "Trabajos con Aplicaciones",
@@ -201,6 +205,7 @@
     "rejectApplication": "Rechazar Aplicación",
     "sendMessage": "Enviar Mensaje",
     "confirmRejectApplication": "¿Estás seguro de que quieres rechazar esta aplicación?",
+    "confirmCancelJob": "¿Estás seguro de que quieres cancelar este trabajo?",
     "applicationMessage": "Mensaje de Aplicación",
     "actions": {
       "profile": "Perfil",
@@ -233,6 +238,7 @@
     "respondsIn": "Responde en",
     "compare": "Comparar",
     "message": "Mensaje",
+    "chatWith": "Chatear con {name}",
     "selecting": "Seleccionando...",
     "earningsOverview": "Resumen de Ganancias",
     "monthlyEarningsDescription": "Tus ganancias durante los últimos meses",
@@ -258,7 +264,10 @@
     "agreedTerms": "Términos Acordados",
     "negotiatedAmount": "Monto Negociado",
     "additionalTerms": "Términos Adicionales",
-    "agreedOn": "Acordado el"
+    "agreedOn": "Acordado el",
+    "notYetDiscussed": "Aún no discutido",
+    "notYetDiscussedDescription": "Inicia una conversación para negociar términos y presupuesto para este trabajo.",
+    "completed": "Completado"
   },
   "jobs": {
     "describeWorkPlaceholder": "Describe el trabajo a realizar en detalle...",
@@ -298,7 +307,55 @@
     "applyForJob": "Aplicar al Trabajo",
     "submitApplication": "Envía tu aplicación para este trabajo",
     "jobNotFound": "Trabajo no encontrado",
-    "assignedContractor": "Contratista Asignado"
+    "assignedContractor": "Contratista Asignado",
+    "processing": "Procesando...",
+    "actions": "Acciones",
+    "viewDetails": "Ver Detalles",
+    "viewApplications": "Ver Aplicaciones",
+    "viewProgress": "Ver Progreso",
+    "editJob": "Editar Trabajo",
+    "messageClient": "Mensaje al Cliente",
+    "messageContractor": "Mensaje al Contratista",
+    "saveJob": "Guardar Trabajo",
+    "promoteJob": "Promocionar Trabajo",
+    "cancelJob": "Cancelar Trabajo",
+    "uploadProgress": "Subir Progreso",
+    "awaitingApproval": "Esperando Aprobación",
+    "requestChanges": "Solicitar Cambios",
+    "moreActions": "Más Acciones",
+    "applying": "Aplicando...",
+    "needsImmediateAttention": "Necesita atención inmediata",
+    "reviewApplications": "Revisar aplicaciones",
+    "waitingForApplications": "Esperando aplicaciones",
+    "contractorWillStart": "El contratista comenzará pronto",
+    "workInProgress": "Trabajo en progreso",
+    "reviewRequired": "Revisión requerida",
+    "approvalRequired": "Aprobación requerida",
+    "progress": {
+      "assigned": "Asignado al contratista",
+      "inProgress": "Trabajo en progreso",
+      "completed": "Trabajo completado",
+      "inReview": "En revisión"
+    },
+    "attention": {
+      "reviewWork": "Revisar Trabajo",
+      "finalizeJob": "Finalizar Trabajo",
+      "newApplications": "Nuevas Aplicaciones",
+      "actionRequired": "Acción Requerida",
+      "reviewWorkMessage": "El contratista ha completado el trabajo y está listo para tu revisión.",
+      "finalizeJobMessage": "Por favor revisa y finaliza este trabajo para completar el proceso.",
+      "newApplicationsMessage": "{count} nuevas aplicaciones recibidas para este trabajo.",
+      "actionRequiredMessage": "Este trabajo requiere tu atención inmediata."
+    },
+    "reviewNow": "Revisar Ahora",
+    "finalizeNow": "Finalizar Ahora",
+    "takeAction": "Tomar Acción",
+    "quickStatusChange": "Cambio Rápido de Estado",
+    "statusChangeHint": "Actualiza el estado del trabajo con un toque",
+    "jobInProgress": "Trabajo En Progreso",
+    "markCompletedHint": "Marcar como completado cuando el trabajo esté terminado",
+    "markInProgress": "Marcar En Progreso",
+    "markCompleted": "Marcar Completado"
   },
   "jobStatus": {
     "open": "Abierto",
@@ -307,7 +364,6 @@
     "in_progress": "En Progreso",
     "completed": "Completado",
     "cancelled": "Cancelado",
-    "in_review": "En Revisión",
     "finalized": "Finalizado",
     "unknown": "Estado Desconocido"
   },
@@ -463,7 +519,11 @@
     "viewReceipt": "Ver Recibo",
     "historyError": "No se pudo cargar el historial de pagos: {error}",
     "refundNotImplemented": "La funcionalidad de solicitud de reembolso se implementará pronto.",
-    "receiptNotImplemented": "La funcionalidad de visualización de recibos se implementará pronto."
+    "receiptNotImplemented": "La funcionalidad de visualización de recibos se implementará pronto.",
+    "payNow": "Pagar Ahora",
+    "status": {
+      "unpaid": "Sin Pagar"
+    }
   },
   "profile": {
     "title": "Mi Perfil",

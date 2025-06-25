@@ -3,6 +3,10 @@ import { ref, computed } from 'vue';
 import { processSupabaseImageUrl } from '../lib/supabaseUtils.js'; // Import utility function
 import { useAuthenticatedDataFetching } from '../composables/useAuth'; // Import centralized auth
 import { useJobImagesStore } from './jobImages.js'; // Import job images store
+import {
+  useUnifiedNotifications,
+  NotificationPresets,
+} from '../composables/useUnifiedNotifications.js'; // Import notification system
 
 // Helper function to validate UUID format
 export const isValidUUID = (id) => {
@@ -18,8 +22,7 @@ export const JOB_STATUS = {
   OPEN: 'open', // Job is available for contractors to apply
   ASSIGNED: 'assigned', // Job has been assigned to a contractor but work hasn't started
   IN_PROGRESS: 'in_progress', // Contractor has started working on the job
-  COMPLETED: 'completed', // Contractor has marked the job as complete, awaiting client review
-  IN_REVIEW: 'in_review', // Client is reviewing the completed work
+  COMPLETED: 'completed', // Contractor has marked the job as complete, awaiting client approval
   FINALIZED: 'finalized', // Job is complete and payment has been processed
   CANCELLED: 'cancelled', // Job has been cancelled by the client
 
@@ -732,6 +735,165 @@ export const useJobStore = defineStore('job', () => {
     return updateJob(jobId, { status: 'completed' });
   };
 
+  // Finalize job (COMPLETED → FINALIZED)
+  const finalizeJob = async (jobId) => {
+    console.log(`[JobStore] Finalizing job ${jobId}...`);
+
+    return executeWithAuth(async (supabase) => {
+      // First, get the job details to access contractor and job information
+      const { data: jobData, error: fetchError } = await supabase
+        .from('job_postings')
+        .select(
+          `
+          *,
+          contractor_profiles (
+            full_name,
+            user_id
+          )
+        `
+        )
+        .eq('id', jobId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Failed to fetch job details: ${fetchError.message}`);
+      }
+
+      // Update the job status
+      const updatedJob = await updateJob(jobId, { status: 'finalized' });
+
+      // Send notification to the assigned contractor
+      if (jobData.assigned_contractor_id && jobData.contractor_profiles) {
+        try {
+          const notifications = useUnifiedNotifications();
+          await notifications.sendNotification({
+            title: 'Job Completed Successfully!',
+            body: 'Job completed successfully! Payment has been processed',
+            icon: '/images/job-status-icon.png',
+            data: {
+              type: 'job_status_update',
+              jobId: jobId,
+              newStatus: 'finalized',
+              jobTitle: jobData.category_name || 'Job',
+            },
+          });
+          console.log(
+            `[JobStore] Notification sent to contractor for job ${jobId} finalized`
+          );
+        } catch (notificationError) {
+          console.warn(
+            `[JobStore] Failed to send notification for job ${jobId}:`,
+            notificationError
+          );
+          // Don't throw error - job status update should succeed even if notification fails
+        }
+      }
+
+      return updatedJob;
+    }, true);
+  };
+
+  // Cancel job (Any status → CANCELLED)
+  const cancelJob = async (jobId, reason = null) => {
+    console.log(
+      `[JobStore] Cancelling job ${jobId}${reason ? ` with reason: ${reason}` : ''}...`
+    );
+
+    return executeWithAuth(async (supabase) => {
+      // First, get the job details to access contractor, client, and job information
+      const { data: jobData, error: fetchError } = await supabase
+        .from('job_postings')
+        .select(
+          `
+          *,
+          contractor_profiles (
+            full_name,
+            user_id
+          ),
+          profiles!job_postings_posted_by_user_id_fkey (
+            full_name,
+            id
+          )
+        `
+        )
+        .eq('id', jobId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Failed to fetch job details: ${fetchError.message}`);
+      }
+
+      // Prepare updates
+      const updates = { status: 'cancelled' };
+      if (reason) {
+        updates.cancellation_reason = reason;
+      }
+
+      // Update the job status
+      const updatedJob = await updateJob(jobId, updates);
+
+      // Send notifications to relevant parties
+      const notifications = useUnifiedNotifications();
+      const notificationPromises = [];
+
+      // Notify the assigned contractor (if any)
+      if (jobData.assigned_contractor_id && jobData.contractor_profiles) {
+        const contractorNotification = notifications.sendNotification({
+          title: 'Job Cancelled',
+          body: reason
+            ? `Job has been cancelled. Reason: ${reason}`
+            : 'Job has been cancelled',
+          icon: '/images/job-status-icon.png',
+          data: {
+            type: 'job_status_update',
+            jobId: jobId,
+            newStatus: 'cancelled',
+            jobTitle: jobData.category_name || 'Job',
+            reason: reason || null,
+          },
+        });
+        notificationPromises.push(contractorNotification);
+      }
+
+      // Notify the client (job poster)
+      if (jobData.posted_by_user_id && jobData.profiles) {
+        const clientNotification = notifications.sendNotification({
+          title: 'Job Cancelled',
+          body: reason
+            ? `Your job has been cancelled. Reason: ${reason}`
+            : 'Your job has been cancelled',
+          icon: '/images/job-status-icon.png',
+          data: {
+            type: 'job_status_update',
+            jobId: jobId,
+            newStatus: 'cancelled',
+            jobTitle: jobData.category_name || 'Job',
+            reason: reason || null,
+          },
+        });
+        notificationPromises.push(clientNotification);
+      }
+
+      // Send all notifications (don't wait for them to complete)
+      if (notificationPromises.length > 0) {
+        try {
+          await Promise.allSettled(notificationPromises);
+          console.log(
+            `[JobStore] Notifications sent for cancelled job ${jobId}`
+          );
+        } catch (notificationError) {
+          console.warn(
+            `[JobStore] Failed to send notifications for job ${jobId}:`,
+            notificationError
+          );
+          // Don't throw error - job status update should succeed even if notifications fail
+        }
+      }
+
+      return updatedJob;
+    }, true);
+  };
+
   // Clear user jobs
   const clearUserJobs = () => {
     userJobs.value = [];
@@ -791,6 +953,8 @@ export const useJobStore = defineStore('job', () => {
     applyToJob,
     markJobInProgress,
     markJobCompleted,
+    finalizeJob,
+    cancelJob,
 
     // Filter actions
     setSearchQuery,

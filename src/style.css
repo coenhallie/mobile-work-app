@@ -1,5 +1,5 @@
 /* Preload critical fonts with font-display: swap for faster rendering */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap&text=ABCDEFGHIJ KLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap&subset=latin,latin-ext');
 
 /* Tailwind CSS v4 Theme Configuration */
 /* This should come BEFORE @import 'tailwindcss' */
